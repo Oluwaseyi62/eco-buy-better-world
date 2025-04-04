@@ -109,12 +109,12 @@ const About: React.FC = () => {
             <div className="text-center">
               <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?q=80&w=2000&auto=format&fit=crop" 
+                  src="./Dan.jpg" 
                   alt="Team member" 
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h3 className="font-semibold mb-1">Emma Chen</h3>
+              <h3 className="font-semibold mb-1">Ayoade Oluwaseyi</h3>
               <p className="text-muted-foreground">Founder & CEO</p>
             </div>
             <div className="text-center">

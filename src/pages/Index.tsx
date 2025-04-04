@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import FeaturedProducts from "@/components/FeaturedProducts";
@@ -7,6 +7,53 @@ import Footer from "@/components/Footer";
 import { Leaf, ShieldCheck, Truck, Recycle } from "lucide-react";
 
 const Index: React.FC = () => {
+  const featureRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const communityRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    
+    // Observer for feature cards
+    featureRefs.current.forEach((ref, index) => {
+      if (ref) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            if (entries[0].isIntersecting) {
+              setTimeout(() => {
+                ref.classList.add('opacity-100', 'translate-y-0');
+                ref.classList.remove('opacity-0', 'translate-y-10');
+              }, index * 150);
+            }
+          },
+          { threshold: 0.1 }
+        );
+        
+        observer.observe(ref);
+        observers.push(observer);
+      }
+    });
+    
+    // Observer for community section
+    if (communityRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            communityRef.current?.classList.add('opacity-100', 'translate-x-0');
+            communityRef.current?.classList.remove('opacity-0', 'translate-x-20');
+          }
+        },
+        { threshold: 0.1 }
+      );
+      
+      observer.observe(communityRef.current);
+      observers.push(observer);
+    }
+    
+    return () => {
+      observers.forEach(observer => observer.disconnect());
+    };
+  }, []);
+
   const features = [
     {
       icon: <Leaf className="h-10 w-10 text-eco-600" />,
@@ -43,10 +90,10 @@ const Index: React.FC = () => {
         <section className="py-16 bg-earth-50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">
+              <h2 className="text-3xl font-bold mb-4 animate-fade-in">
                 Why Shop with EcoBuy?
               </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
                 We're building a marketplace that makes sustainable shopping accessible, 
                 affordable, and transparent for everyone.
               </p>
@@ -56,9 +103,10 @@ const Index: React.FC = () => {
               {features.map((feature, index) => (
                 <div 
                   key={index} 
-                  className="rounded-xl bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md"
+                  ref={(el) => (featureRefs.current[index] = el)}
+                  className="rounded-xl bg-white p-6 shadow-sm transition-all duration-500 hover:shadow-md opacity-0 translate-y-10 transform"
                 >
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-eco-100">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-eco-100 transition-all duration-300 hover:scale-110">
                     {feature.icon}
                   </div>
                   <h3 className="mb-2 text-xl font-semibold">{feature.title}</h3>
@@ -71,10 +119,13 @@ const Index: React.FC = () => {
         
         <FeaturedProducts />
         
-        <section className="bg-eco-600 py-16 text-white">
+        <section className="bg-eco-600 py-16 text-white overflow-hidden">
           <div className="container mx-auto px-4">
             <div className="grid gap-8 md:grid-cols-2 items-center">
-              <div>
+              <div 
+                ref={communityRef}
+                className="transition-all duration-1000 ease-out transform opacity-0 translate-x-20"
+              >
                 <h2 className="text-3xl font-bold mb-4">
                   Join Our Sustainable Community
                 </h2>
@@ -83,13 +134,13 @@ const Index: React.FC = () => {
                   Join thousands of conscious consumers making better choices for our planet.
                 </p>
                 <ul className="eco-leaf-bullet space-y-3 mb-6">
-                  <li className="text-eco-50">Support eco-friendly businesses and artisans</li>
-                  <li className="text-eco-50">Reduce your carbon footprint with every purchase</li>
-                  <li className="text-eco-50">Earn rewards for sustainable choices</li>
-                  <li className="text-eco-50">Learn more about sustainable living</li>
+                  <li className="text-eco-50 transition-all hover:translate-x-1 duration-300">Support eco-friendly businesses and artisans</li>
+                  <li className="text-eco-50 transition-all hover:translate-x-1 duration-300">Reduce your carbon footprint with every purchase</li>
+                  <li className="text-eco-50 transition-all hover:translate-x-1 duration-300">Earn rewards for sustainable choices</li>
+                  <li className="text-eco-50 transition-all hover:translate-x-1 duration-300">Learn more about sustainable living</li>
                 </ul>
               </div>
-              <div className="rounded-xl overflow-hidden shadow-lg">
+              <div className="rounded-xl overflow-hidden shadow-lg transform transition-all duration-500 hover:scale-[1.03] hover:rotate-1">
                 <img 
                   src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?q=80&w=1000&auto=format&fit=crop" 
                   alt="Eco-friendly community" 

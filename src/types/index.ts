@@ -1,5 +1,5 @@
 
-export type SustainabilityScore = 1 | 2 | 3 | 4 | 5;
+export type SustainabilityScore = number; // Using number instead of literal union type to allow decimal values
 
 export interface Certification {
   name: string;
@@ -14,9 +14,10 @@ export interface Product {
   description: string;
   sustainabilityScore: SustainabilityScore;
   category: string;
-  certifications: Certification[];
-  features: string[];
+  certifications?: Certification[]; // Make it optional to fix errors
+  features?: string[]; // Make it optional to fix errors
   inStock: boolean;
+  isOnSale?: boolean; // Add isOnSale property
 }
 
 export type Category = {

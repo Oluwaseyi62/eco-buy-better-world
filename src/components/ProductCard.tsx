@@ -41,9 +41,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </p>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full gap-2 bg-eco-600 hover:bg-eco-700">
+        <Button className="w-full gap-2 bg-eco-600 hover:bg-eco-700 group">
           <ShoppingBag className="h-4 w-4" />
-          Add to Cart
+          <span className="sm:inline">Add to Cart</span>
         </Button>
       </CardFooter>
     </Card>

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Hero: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -35,12 +36,16 @@ const Hero: React.FC = () => {
             
             <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0 transition-all duration-700 delay-700 ease-out transform 
             ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}">
-              <Button className="bg-eco-600 hover:bg-eco-700 text-white pl-6 pr-4 py-6 hover:scale-105 transition-transform duration-300">
-                Shop Now
-                <ArrowRight className="ml-2 h-4 w-4 animate-pulse" />
+              <Button asChild className="bg-eco-600 hover:bg-eco-700 text-white pl-6 pr-4 py-6 hover:scale-105 transition-transform duration-300">
+                <Link to="/shop">
+                  Shop Now
+                  <ArrowRight className="ml-2 h-4 w-4 animate-pulse" />
+                </Link>
               </Button>
-              <Button variant="outline" className="border-eco-600 text-eco-600 hover:bg-eco-50 py-6 hover:scale-105 transition-transform duration-300">
-                Learn About Our Mission
+              <Button asChild variant="outline" className="border-eco-600 text-eco-600 hover:bg-eco-50 py-6 hover:scale-105 transition-transform duration-300">
+                <Link to="/about">
+                  Learn About Our Mission
+                </Link>
               </Button>
             </div>
           </div>

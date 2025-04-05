@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EyeIcon, EyeOffIcon, Upload } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -49,6 +48,8 @@ const LoginPage: React.FC = () => {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [registerError, setRegisterError] = useState<string | null>(null);
   
   // Check if user came from a protected route
   const from = location.state?.from || "/";
@@ -87,16 +88,15 @@ const LoginPage: React.FC = () => {
   
   const handleLogin = async (values: z.infer<typeof loginSchema>) => {
     setLoginLoading(true);
+    setLoginError(null);
     
     try {
       await login(values.email, values.password);
-      toast({
-        title: "Login successful",
-        description: "Welcome back to EcoBuy!",
-      });
+      // Success toast is handled in the AuthContext
       navigate(from, { replace: true });
     } catch (error) {
-      // Error is handled in the AuthContext
+      setLoginError(error instanceof Error ? error.message : "Login failed. Please try again.");
+      console.error("Login error:", error);
     } finally {
       setLoginLoading(false);
     }
@@ -104,16 +104,15 @@ const LoginPage: React.FC = () => {
   
   const handleRegister = async (values: z.infer<typeof registerSchema>) => {
     setRegisterLoading(true);
+    setRegisterError(null);
     
     try {
       await registerUser(values.email, values.password, values.firstName, values.lastName);
-      toast({
-        title: "Registration successful",
-        description: "Welcome to EcoBuy!",
-      });
+      // Success toast is handled in the AuthContext
       navigate(from, { replace: true });
     } catch (error) {
-      // Error is handled in the AuthContext
+      setRegisterError(error instanceof Error ? error.message : "Registration failed. Please try again.");
+      console.error("Registration error:", error);
     } finally {
       setRegisterLoading(false);
     }
@@ -154,6 +153,12 @@ const LoginPage: React.FC = () => {
             <TabsContent value="login">
               <Form {...loginForm}>
                 <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+                  {loginError && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+                      {loginError}
+                    </div>
+                  )}
+                
                   <FormField
                     control={loginForm.control}
                     name="email"
@@ -201,6 +206,9 @@ const LoginPage: React.FC = () => {
                           </button>
                         </div>
                         <FormMessage />
+                        <div className="text-xs text-muted-foreground mt-1">
+                          (For demo purposes, use "password" as the password)
+                        </div>
                       </FormItem>
                     )}
                   />
@@ -222,7 +230,11 @@ const LoginPage: React.FC = () => {
                     </a>
                   </div>
                   
-                  <Button type="submit" className="w-full bg-eco-600 hover:bg-eco-700" disabled={loginLoading}>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-eco-600 hover:bg-eco-700" 
+                    disabled={loginLoading}
+                  >
                     {loginLoading ? "Logging in..." : "Log In"}
                   </Button>
                   
@@ -252,6 +264,12 @@ const LoginPage: React.FC = () => {
             <TabsContent value="register">
               <Form {...registerForm}>
                 <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
+                  {registerError && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+                      {registerError}
+                    </div>
+                  )}
+                
                   <div className="flex justify-center mb-4">
                     <div className="relative">
                       <Avatar className="h-24 w-24">

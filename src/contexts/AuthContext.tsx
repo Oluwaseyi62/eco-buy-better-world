@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -97,6 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         setUser(JSON.parse(storedUser));
       } catch (error) {
+        console.error("Error parsing stored user:", error);
         localStorage.removeItem("user");
       }
     }
@@ -107,34 +107,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      // In a real app, this would be an API call
       // For demo purposes, we're using mock authentication
-      if (email && password) {
-        // Mock successful login
-        // Check localStorage for existing user
-        const storedUsers = localStorage.getItem("users");
-        const users = storedUsers ? JSON.parse(storedUsers) : [];
+      if (!email || !password) {
+        throw new Error("Email and password are required");
+      }
+      
+      // Check localStorage for existing users
+      const storedUsers = localStorage.getItem("users");
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      
+      const foundUser = users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
+      
+      if (foundUser && password === "password") { // Simple password check for demo
+        setUser(foundUser);
+        localStorage.setItem("user", JSON.stringify(foundUser));
         
-        const foundUser = users.find((u: any) => u.email === email);
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
         
-        if (foundUser && password === "password") { // Simple password check for demo
-          setUser(foundUser);
-          localStorage.setItem("user", JSON.stringify(foundUser));
-          
-          toast({
-            title: "Login successful",
-            description: "Welcome back!",
-            variant: "default",
-          });
-          
-          return Promise.resolve();
-        } else {
-          return Promise.reject(new Error("Invalid credentials"));
-        }
+        return Promise.resolve();
       } else {
-        return Promise.reject(new Error("Invalid credentials"));
+        throw new Error("Invalid credentials");
       }
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
         description: error instanceof Error ? error.message : "Please try again",
@@ -253,7 +251,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
   };
 
-  // Cart functions
   const addToCart = (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
     if (!user) return;
     
@@ -309,7 +306,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     updateUserData(updatedUser);
   };
 
-  // Wishlist functions
   const addToWishlist = (item: Omit<WishlistItem, "inStock"> & { inStock?: boolean }) => {
     if (!user) return;
     
@@ -347,7 +343,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     updateUserData(updatedUser);
   };
 
-  // Order functions
   const createOrder = (): string | null => {
     if (!user || user.cart.length === 0) return null;
     
@@ -380,7 +375,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return orderId;
   };
 
-  // Helper function to update user data in state and local storage
   const updateUserData = (updatedUser: User) => {
     setUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));

@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Upload } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,6 +28,8 @@ const LoginPage: React.FC = () => {
   const [registerPassword, setRegisterPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [registerLoading, setRegisterLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   
@@ -79,6 +82,19 @@ const LoginPage: React.FC = () => {
       // Error is handled in the AuthContext
     } finally {
       setRegisterLoading(false);
+    }
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // In a real app, you would upload this to a storage service
+      // For demo purposes, we'll use a data URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -179,6 +195,28 @@ const LoginPage: React.FC = () => {
             
             <TabsContent value="register">
               <form onSubmit={handleRegister} className="space-y-4">
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={avatarUrl} />
+                      <AvatarFallback>{firstName && lastName ? `${firstName[0]}${lastName[0]}` : 'U'}</AvatarFallback>
+                    </Avatar>
+                    <label 
+                      htmlFor="avatar-upload" 
+                      className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-eco-600 text-white flex items-center justify-center cursor-pointer"
+                    >
+                      <Upload className="h-4 w-4" />
+                      <input 
+                        id="avatar-upload" 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handleAvatarChange}
+                      />
+                    </label>
+                  </div>
+                </div>
+                
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="register-first-name">First Name</Label>
@@ -208,6 +246,16 @@ const LoginPage: React.FC = () => {
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
                     required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="register-phone">Phone Number (Optional)</Label>
+                  <Input 
+                    id="register-phone" 
+                    type="tel" 
+                    placeholder="(555) 123-4567" 
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                   />
                 </div>
                 <div>

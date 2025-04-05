@@ -9,6 +9,15 @@ interface User {
   name: string;
   firstName?: string;
   lastName?: string;
+  phone?: string;
+  avatarUrl?: string;
+}
+
+interface ProfileUpdateData {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  avatarUrl?: string;
 }
 
 interface AuthContextType {
@@ -18,6 +27,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   logout: () => void;
+  updateProfile: (data: ProfileUpdateData) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -132,6 +142,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateProfile = async (data: ProfileUpdateData) => {
+    try {
+      setIsLoading(true);
+      
+      if (!user) {
+        throw new Error("No user is logged in");
+      }
+      
+      // Update the user object with new data
+      const updatedUser = {
+        ...user,
+        ...data,
+        name: `${data.firstName || user.firstName || ''} ${data.lastName || user.lastName || ''}`.trim(),
+      };
+      
+      // Update in localStorage
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      
+      // Update state
+      setUser(updatedUser);
+      
+      return Promise.resolve();
+    } catch (error) {
+      return Promise.reject(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("user");
     setUser(null);
@@ -150,7 +189,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isLoading, 
         login, 
         register, 
-        logout 
+        logout,
+        updateProfile
       }}
     >
       {children}

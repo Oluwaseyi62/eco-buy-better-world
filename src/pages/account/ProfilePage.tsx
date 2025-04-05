@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import AccountLayout from "./AccountLayout";
 import { Button } from "@/components/ui/button";
@@ -7,8 +6,54 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Pencil } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/use-toast";
 
 const ProfilePage: React.FC = () => {
+  const { user, updateProfile } = useAuth();
+  const [firstName, setFirstName] = useState(user?.firstName || "");
+  const [lastName, setLastName] = useState(user?.lastName || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [loading, setLoading] = useState(false);
+
+  const handleSaveChanges = async () => {
+    setLoading(true);
+    try {
+      await updateProfile({
+        firstName,
+        lastName,
+        phone
+      });
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Update failed",
+        description: "There was an error updating your profile",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getInitials = () => {
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    } else if (user?.name) {
+      const nameParts = user.name.split(' ');
+      if (nameParts.length >= 2) {
+        return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
+      } else if (nameParts.length === 1) {
+        return nameParts[0][0].toUpperCase();
+      }
+    }
+    return "U";
+  };
+
   return (
     <Layout>
       <AccountLayout activeTab="profile">
@@ -23,17 +68,17 @@ const ProfilePage: React.FC = () => {
           <div className="flex items-center gap-6">
             <div className="relative">
               <Avatar className="h-24 w-24">
-                <AvatarImage src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=2000&auto=format&fit=crop" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarImage src={user?.avatarUrl} />
+                <AvatarFallback>{getInitials()}</AvatarFallback>
               </Avatar>
               <button className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-eco-600 text-white flex items-center justify-center">
                 <Pencil className="h-4 w-4" />
               </button>
             </div>
             <div>
-              <h2 className="text-xl font-semibold">Jane Doe</h2>
+              <h2 className="text-xl font-semibold">{user?.name || `${firstName} ${lastName}`}</h2>
               <p className="text-muted-foreground">
-                Member since April 2024
+                Member since {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </p>
             </div>
           </div>
@@ -45,24 +90,51 @@ const ProfilePage: React.FC = () => {
               <div className="grid gap-4">
                 <div>
                   <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" defaultValue="Jane" className="mt-1" />
+                  <Input 
+                    id="firstName" 
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="mt-1" 
+                  />
                 </div>
                 <div>
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" defaultValue="Doe" className="mt-1" />
+                  <Input 
+                    id="lastName" 
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="mt-1" 
+                  />
                 </div>
                 <div>
                   <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" defaultValue="jane.doe@example.com" className="mt-1" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1"
+                    disabled 
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" defaultValue="(555) 123-4567" className="mt-1" />
+                  <Input 
+                    id="phone" 
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="mt-1" 
+                  />
                 </div>
               </div>
               
-              <Button className="bg-eco-600 hover:bg-eco-700">
-                Save Changes
+              <Button 
+                className="bg-eco-600 hover:bg-eco-700"
+                onClick={handleSaveChanges}
+                disabled={loading}
+              >
+                {loading ? "Saving..." : "Save Changes"}
               </Button>
             </div>
             

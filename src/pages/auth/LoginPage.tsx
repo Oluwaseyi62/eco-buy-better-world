@@ -1,6 +1,6 @@
 
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,12 +8,78 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/use-toast";
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const { login, register, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Login form state
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  
+  // Register form state
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  
+  // Check if user came from a protected route
+  const from = location.state?.from || "/";
+  
+  useEffect(() => {
+    // If user is already authenticated, redirect them
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
   
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+  
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    
+    try {
+      await login(loginEmail, loginPassword);
+      navigate(from, { replace: true });
+    } catch (error) {
+      // Error is handled in the AuthContext
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+  
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegisterLoading(true);
+    
+    if (!acceptedTerms) {
+      toast({
+        title: "Terms & Conditions",
+        description: "You must accept the Terms of Service and Privacy Policy",
+        variant: "destructive",
+      });
+      setRegisterLoading(false);
+      return;
+    }
+    
+    try {
+      await register(registerEmail, registerPassword, firstName, lastName);
+      navigate(from, { replace: true });
+    } catch (error) {
+      // Error is handled in the AuthContext
+    } finally {
+      setRegisterLoading(false);
+    }
   };
 
   return (
@@ -35,10 +101,17 @@ const LoginPage: React.FC = () => {
             </TabsList>
             
             <TabsContent value="login">
-              <div className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-4">
                 <div>
                   <Label htmlFor="login-email">Email</Label>
-                  <Input id="login-email" type="email" placeholder="your@email.com" />
+                  <Input 
+                    id="login-email" 
+                    type="email" 
+                    placeholder="your@email.com" 
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="login-password">Password</Label>
@@ -47,6 +120,9 @@ const LoginPage: React.FC = () => {
                       id="login-password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
                     />
                     <button
                       type="button"
@@ -77,8 +153,8 @@ const LoginPage: React.FC = () => {
                     Forgot password?
                   </a>
                 </div>
-                <Button className="w-full bg-eco-600 hover:bg-eco-700">
-                  Log In
+                <Button type="submit" className="w-full bg-eco-600 hover:bg-eco-700" disabled={loginLoading}>
+                  {loginLoading ? "Logging in..." : "Log In"}
                 </Button>
                 <div className="relative mt-6">
                   <div className="absolute inset-0 flex items-center">
@@ -91,31 +167,48 @@ const LoginPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mt-6">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" type="button">
                     Google
                   </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" type="button">
                     Facebook
                   </Button>
                 </div>
-              </div>
+              </form>
             </TabsContent>
             
             <TabsContent value="register">
-              <div className="space-y-4">
+              <form onSubmit={handleRegister} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="register-first-name">First Name</Label>
-                    <Input id="register-first-name" />
+                    <Input 
+                      id="register-first-name" 
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="register-last-name">Last Name</Label>
-                    <Input id="register-last-name" />
+                    <Input 
+                      id="register-last-name" 
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                    />
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="register-email">Email</Label>
-                  <Input id="register-email" type="email" placeholder="your@email.com" />
+                  <Input 
+                    id="register-email" 
+                    type="email" 
+                    placeholder="your@email.com" 
+                    value={registerEmail}
+                    onChange={(e) => setRegisterEmail(e.target.value)}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="register-password">Password</Label>
@@ -124,6 +217,9 @@ const LoginPage: React.FC = () => {
                       id="register-password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
+                      value={registerPassword}
+                      onChange={(e) => setRegisterPassword(e.target.value)}
+                      required
                     />
                     <button
                       type="button"
@@ -147,6 +243,8 @@ const LoginPage: React.FC = () => {
                     name="terms"
                     type="checkbox"
                     className="h-4 w-4 rounded border-gray-300 text-eco-600 focus:ring-eco-500"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
                   />
                   <label htmlFor="terms" className="ml-2 block text-sm text-muted-foreground">
                     I agree to the{" "}
@@ -159,10 +257,10 @@ const LoginPage: React.FC = () => {
                     </a>
                   </label>
                 </div>
-                <Button className="w-full bg-eco-600 hover:bg-eco-700">
-                  Create Account
+                <Button type="submit" className="w-full bg-eco-600 hover:bg-eco-700" disabled={registerLoading}>
+                  {registerLoading ? "Creating Account..." : "Create Account"}
                 </Button>
-              </div>
+              </form>
             </TabsContent>
           </Tabs>
         </div>

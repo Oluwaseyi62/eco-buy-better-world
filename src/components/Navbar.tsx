@@ -24,9 +24,6 @@ const Navbar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { user, isAuthenticated, logout } = useAuth();
   
-  // Mock data - in a real app, these would come from context/state management
-  const cartItemsCount = 2;
-  
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -132,7 +129,7 @@ const Navbar: React.FC = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative hover:bg-eco-100 transition-colors">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=2000&auto=format&fit=crop" />
+                    <AvatarImage src={user?.avatarUrl} />
                     <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
                   </Avatar>
                   <span className="sr-only">Account</span>
@@ -176,9 +173,9 @@ const Navbar: React.FC = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative hover:bg-eco-100 transition-colors">
                 <ShoppingBag className="h-5 w-5" />
-                {cartItemsCount > 0 && isAuthenticated && (
+                {isAuthenticated && user?.cart && user.cart.length > 0 && (
                   <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                    {cartItemsCount}
+                    {user.cart.length}
                   </Badge>
                 )}
                 <span className="sr-only">Cart</span>
@@ -188,7 +185,7 @@ const Navbar: React.FC = () => {
               {isAuthenticated ? (
                 <>
                   <DropdownMenuItem asChild>
-                    <Link to="/cart" className="cursor-pointer">View Cart ({cartItemsCount})</Link>
+                    <Link to="/cart" className="cursor-pointer">View Cart {user?.cart && `(${user.cart.length})`}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/checkout" className="cursor-pointer">Checkout</Link>
@@ -222,7 +219,7 @@ const Navbar: React.FC = () => {
                 {isAuthenticated && (
                   <div className="flex items-center gap-3 p-3 bg-earth-50 rounded-lg">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=2000&auto=format&fit=crop" />
+                      <AvatarImage src={user?.avatarUrl} />
                       <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
                     </Avatar>
                     <div>

@@ -1,6 +1,6 @@
 
-import React from "react";
-import { useSearchParams } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
 import { useQuery } from "@tanstack/react-query";
@@ -11,9 +11,14 @@ import { Button } from "@/components/ui/button";
 
 const SearchResults: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const query = searchParams.get("q") || "";
   const [searchInput, setSearchInput] = React.useState(query);
   
+  useEffect(() => {
+    setSearchInput(query);
+  }, [query]);
+
   // Mock search function - in a real app, this would call an API
   const searchProducts = async (searchQuery: string): Promise<Product[]> => {
     return new Promise((resolve) => {
@@ -41,6 +46,39 @@ const SearchResults: React.FC = () => {
             sustainabilityScore: 5.0,
             inStock: true,
             isOnSale: true
+          },
+          {
+            id: "3",
+            name: "Recycled Glass Water Bottle",
+            description: "Beautiful water bottle made from recycled glass with a silicone protective sleeve.",
+            price: 24.99,
+            image: "https://images.unsplash.com/photo-1638184984605-af1f05249a56?q=80&w=2000&auto=format&fit=crop",
+            category: "home",
+            sustainabilityScore: 4.8,
+            inStock: true,
+            isOnSale: false
+          },
+          {
+            id: "4",
+            name: "Biodegradable Phone Case",
+            description: "Protect your phone with this fully compostable phone case made from plant-based materials.",
+            price: 29.99,
+            image: "https://images.unsplash.com/photo-1609081219090-a6d81d3085bf?q=80&w=2000&auto=format&fit=crop",
+            category: "tech",
+            sustainabilityScore: 4.2,
+            inStock: true,
+            isOnSale: true
+          },
+          {
+            id: "5",
+            name: "Solar-Powered Charger",
+            description: "Charge your devices with the power of the sun. Compact, lightweight design with dual USB ports.",
+            price: 49.99,
+            image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=2000&auto=format&fit=crop",
+            category: "tech",
+            sustainabilityScore: 4.9,
+            inStock: true,
+            isOnSale: false
           }
         ].filter(product => 
           searchQuery ? 

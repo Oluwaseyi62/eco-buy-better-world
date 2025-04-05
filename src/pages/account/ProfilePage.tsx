@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import AccountLayout from "./AccountLayout";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,9 @@ const ProfilePage: React.FC = () => {
   const [lastName, setLastName] = useState(user?.lastName || "");
   const [email, setEmail] = useState(user?.email || "");
   const [phone, setPhone] = useState(user?.phone || "");
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSaveChanges = async () => {
     setLoading(true);
@@ -23,7 +26,8 @@ const ProfilePage: React.FC = () => {
       await updateProfile({
         firstName,
         lastName,
-        phone
+        phone,
+        avatarUrl
       });
       toast({
         title: "Profile updated",
@@ -38,6 +42,25 @@ const ProfilePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // In a real app, you would upload the file to a server
+    // For demo purposes, we'll use a FileReader to convert to data URL
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setAvatarUrl(event.target.result.toString());
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const getInitials = () => {
@@ -68,10 +91,20 @@ const ProfilePage: React.FC = () => {
           <div className="flex items-center gap-6">
             <div className="relative">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={user?.avatarUrl} />
+                <AvatarImage src={avatarUrl} />
                 <AvatarFallback>{getInitials()}</AvatarFallback>
               </Avatar>
-              <button className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-eco-600 text-white flex items-center justify-center">
+              <button 
+                className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-eco-600 text-white flex items-center justify-center"
+                onClick={handleAvatarClick}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  className="hidden"
+                />
                 <Pencil className="h-4 w-4" />
               </button>
             </div>
@@ -80,6 +113,7 @@ const ProfilePage: React.FC = () => {
               <p className="text-muted-foreground">
                 Member since {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </p>
+              <p className="text-sm text-eco-600 mt-1">Click the pencil icon to upload a profile picture</p>
             </div>
           </div>
           

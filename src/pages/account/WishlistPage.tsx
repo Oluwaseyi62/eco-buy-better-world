@@ -4,35 +4,26 @@ import Layout from "@/components/Layout";
 import AccountLayout from "./AccountLayout";
 import { Heart, Trash2, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const WishlistPage: React.FC = () => {
-  // Mock wishlist data
-  const [wishlistItems, setWishlistItems] = React.useState([
-    {
-      id: "1",
-      name: "Bamboo Utensil Set",
-      price: 19.99,
-      image: "https://images.unsplash.com/photo-1584346133934-7a7398d0c777?q=80&w=1000&auto=format&fit=crop",
-      inStock: true
-    },
-    {
-      id: "3",
-      name: "Recycled Glass Water Bottle",
-      price: 24.99,
-      image: "https://images.unsplash.com/photo-1638184984605-af1f05249a56?q=80&w=1000&auto=format&fit=crop",
-      inStock: true
-    },
-    {
-      id: "5",
-      name: "Solar-Powered Charger",
-      price: 49.99,
-      image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=1000&auto=format&fit=crop",
-      inStock: false
-    }
-  ]);
-  
-  const removeFromWishlist = (id: string) => {
-    setWishlistItems(wishlistItems.filter(item => item.id !== id));
+  const { user, removeFromWishlist, clearWishlist, addToCart } = useAuth();
+  const wishlistItems = user?.wishlist || [];
+
+  const handleRemoveFromWishlist = (id: string) => {
+    removeFromWishlist(id);
+  };
+
+  const handleAddToCart = (item: any) => {
+    addToCart({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      quantity: 1
+    });
+    // Optionally remove from wishlist after adding to cart
+    // removeFromWishlist(item.id);
   };
 
   return (
@@ -61,7 +52,7 @@ const WishlistPage: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div>{wishlistItems.length} items</div>
-                <Button variant="outline" size="sm" onClick={() => setWishlistItems([])}>
+                <Button variant="outline" size="sm" onClick={clearWishlist}>
                   Remove All
                 </Button>
               </div>
@@ -88,7 +79,7 @@ const WishlistPage: React.FC = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => removeFromWishlist(item.id)}
+                          onClick={() => handleRemoveFromWishlist(item.id)}
                           className="text-muted-foreground"
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
@@ -98,6 +89,7 @@ const WishlistPage: React.FC = () => {
                           size="sm"
                           disabled={!item.inStock}
                           className="bg-eco-600 hover:bg-eco-700 gap-1"
+                          onClick={() => handleAddToCart(item)}
                         >
                           <ShoppingBag className="h-4 w-4" />
                           Add to Cart

@@ -1,10 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Product } from "@/types";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Heart } from "lucide-react";
 import SustainabilityScore from "./SustainabilityScore";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
@@ -14,8 +14,11 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, addToCart, addToWishlist, user } = useAuth();
   const navigate = useNavigate();
+  const [isHovering, setIsHovering] = useState(false);
+  
+  const isInWishlist = user?.wishlist?.some(item => item.id === product.id) || false;
   
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // Prevent navigation to product page
@@ -31,15 +34,63 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       return;
     }
     
-    // In a real app, this would add the product to the cart
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart`,
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      quantity: 1
     });
+  };
+  
+  const handleToggleWishlist = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // Prevent navigation to product page
+    
+    if (!isAuthenticated) {
+      // Redirect to login page with return URL
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to save items to your wishlist",
+        variant: "destructive",
+      });
+      navigate("/auth/login", { state: { from: `/product/${product.id}` } });
+      return;
+    }
+    
+    if (!isInWishlist) {
+      addToWishlist({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        inStock: product.inStock
+      });
+    }
   };
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-md">
+    <Card 
+      className="overflow-hidden transition-all duration-300 hover:shadow-md relative"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      {!isInWishlist && isHovering && (
+        <button 
+          className="absolute top-2 right-2 z-10 bg-white rounded-full p-1.5 shadow-md hover:bg-gray-100 transition-colors"
+          onClick={handleToggleWishlist}
+        >
+          <Heart className="h-5 w-5 text-gray-600" />
+        </button>
+      )}
+      {isInWishlist && (
+        <button 
+          className="absolute top-2 right-2 z-10 bg-white rounded-full p-1.5 shadow-md"
+          onClick={(e) => e.preventDefault()}
+        >
+          <Heart className="h-5 w-5 text-red-500 fill-red-500" />
+        </button>
+      )}
+      
       <Link to={`/product/${product.id}`}>
         <div className="aspect-square overflow-hidden">
           <img

@@ -3,56 +3,53 @@ import React from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Trash2, Minus, Plus, ShoppingBag } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/use-toast";
 
 const Cart: React.FC = () => {
-  // Mock cart data
-  const cartItems = [
-    {
-      id: "1",
-      name: "Bamboo Utensil Set",
-      price: 19.99,
-      image: "https://images.unsplash.com/photo-1584346133934-7a7398d0c777?q=80&w=1000&auto=format&fit=crop",
-      quantity: 2,
-    },
-    {
-      id: "2",
-      name: "Organic Cotton Tote Bag",
-      price: 14.99,
-      image: "https://images.unsplash.com/photo-1619627261985-1ad98c30f15f?q=80&w=1000&auto=format&fit=crop",
-      quantity: 1,
-    },
-  ];
+  const { user, updateCartItemQuantity, removeFromCart, clearCart, createOrder } = useAuth();
+  const navigate = useNavigate();
   
-  const [items, setItems] = React.useState(cartItems);
+  const cartItems = user?.cart || [];
   
   const updateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity < 1) return;
-    
-    setItems(items.map(item => 
-      item.id === id ? { ...item, quantity: newQuantity } : item
-    ));
+    updateCartItemQuantity(id, newQuantity);
   };
   
   const removeItem = (id: string) => {
-    setItems(items.filter(item => item.id !== id));
+    removeFromCart(id);
   };
   
-  const subtotal = items.reduce(
+  const subtotal = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
   
-  const shipping = 4.99;
+  const shipping = cartItems.length > 0 ? 4.99 : 0;
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + shipping + tax;
+
+  const handleCheckout = () => {
+    const orderId = createOrder();
+    if (orderId) {
+      navigate("/account/orders");
+    } else {
+      toast({
+        title: "Checkout failed",
+        description: "Unable to process your order. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Layout>
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
         
-        {items.length === 0 ? (
+        {cartItems.length === 0 ? (
           <div className="text-center py-16">
             <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
             <h2 className="text-2xl font-semibold mb-2">Your cart is empty</h2>
@@ -78,7 +75,7 @@ const Cart: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-earth-200">
-                    {items.map((item) => (
+                    {cartItems.map((item) => (
                       <tr key={item.id}>
                         <td className="py-4 px-6">
                           <div className="flex items-center">
@@ -135,7 +132,7 @@ const Cart: React.FC = () => {
                 <Button variant="outline" asChild>
                   <Link to="/shop">Continue Shopping</Link>
                 </Button>
-                <Button variant="outline" onClick={() => setItems([])}>
+                <Button variant="outline" onClick={clearCart}>
                   Clear Cart
                 </Button>
               </div>
@@ -162,8 +159,8 @@ const Cart: React.FC = () => {
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
-                <Button asChild className="w-full bg-eco-600 hover:bg-eco-700">
-                  <Link to="/checkout">Proceed to Checkout</Link>
+                <Button className="w-full bg-eco-600 hover:bg-eco-700" onClick={handleCheckout}>
+                  Complete Order
                 </Button>
                 
                 <div className="mt-4 text-sm text-muted-foreground">

@@ -1,68 +1,31 @@
 
-import React from "react";
+import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import AccountLayout from "./AccountLayout";
 import { Button } from "@/components/ui/button";
 import { Package, ChevronRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/AuthContext";
 
 const OrdersPage: React.FC = () => {
-  // Mock order data
-  const orders = [
-    {
-      id: "ORD-12345",
-      date: "April 2, 2025",
-      status: "delivered",
-      total: 49.97,
-      items: [
-        {
-          id: "1",
-          name: "Bamboo Utensil Set",
-          quantity: 2,
-          price: 19.99,
-          image: "https://images.unsplash.com/photo-1584346133934-7a7398d0c777?q=80&w=1000&auto=format&fit=crop",
-        },
-        {
-          id: "2",
-          name: "Organic Cotton Tote Bag",
-          quantity: 1,
-          price: 14.99,
-          image: "https://images.unsplash.com/photo-1619627261985-1ad98c30f15f?q=80&w=1000&auto=format&fit=crop",
-        }
-      ]
-    },
-    {
-      id: "ORD-12346",
-      date: "March 25, 2025",
-      status: "processing",
-      total: 24.99,
-      items: [
-        {
-          id: "3",
-          name: "Recycled Glass Water Bottle",
-          quantity: 1,
-          price: 24.99,
-          image: "https://images.unsplash.com/photo-1638184984605-af1f05249a56?q=80&w=1000&auto=format&fit=crop",
-        }
-      ]
-    },
-    {
-      id: "ORD-12347",
-      date: "March 10, 2025",
-      status: "delivered",
-      total: 29.99,
-      items: [
-        {
-          id: "4",
-          name: "Biodegradable Phone Case",
-          quantity: 1,
-          price: 29.99,
-          image: "https://images.unsplash.com/photo-1609081219090-a6d81d3085bf?q=80&w=1000&auto=format&fit=crop",
-        }
-      ]
-    }
-  ];
+  const { user } = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  
+  const orders = user?.orders || [];
+  
+  // Filter orders based on search term and active tab
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = searchTerm 
+      ? order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        order.items.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      : true;
+      
+    const matchesTab = activeTab === "all" ? true : order.status === activeTab;
+    
+    return matchesSearch && matchesTab;
+  });
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -77,6 +40,15 @@ const OrdersPage: React.FC = () => {
       default:
         return "bg-gray-100 text-gray-700";
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
   };
 
   return (
@@ -95,10 +67,12 @@ const OrdersPage: React.FC = () => {
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search orders..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 max-w-md"
               />
             </div>
-            <Tabs defaultValue="all">
+            <Tabs defaultValue="all" onValueChange={setActiveTab}>
               <TabsList>
                 <TabsTrigger value="all">All Orders</TabsTrigger>
                 <TabsTrigger value="processing">Processing</TabsTrigger>
@@ -108,7 +82,7 @@ const OrdersPage: React.FC = () => {
             </Tabs>
           </div>
           
-          {orders.length === 0 ? (
+          {filteredOrders.length === 0 ? (
             <div className="text-center py-12 border border-earth-200 rounded-lg">
               <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h2 className="text-xl font-semibold mb-2">No orders yet</h2>
@@ -121,7 +95,7 @@ const OrdersPage: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <div key={order.id} className="border border-earth-200 rounded-lg overflow-hidden">
                   {/* Order header */}
                   <div className="bg-earth-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -133,7 +107,7 @@ const OrdersPage: React.FC = () => {
                         </span>
                       </div>
                       <div className="text-sm text-muted-foreground mt-1">
-                        Placed on {order.date}
+                        Placed on {formatDate(order.date)}
                       </div>
                     </div>
                     <div className="flex items-center gap-3">

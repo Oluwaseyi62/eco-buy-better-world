@@ -98,12 +98,12 @@ const Footer: React.FC = () => {
               <li className="flex items-start">
                 <MapPin className="mr-2 h-5 w-5 text-eco-600 flex-shrink-0" />
                 <span className="text-muted-foreground">
-                  123 Eco Street, Green City, Earth 12345
+                  123 Eco Street, Green City, Nigeria
                 </span>
               </li>
               <li className="flex items-center">
                 <Phone className="mr-2 h-5 w-5 text-eco-600 flex-shrink-0" />
-                <span className="text-muted-foreground">+1 (555) 123-4567</span>
+                <span className="text-muted-foreground">+234 46515571</span>
               </li>
               <li className="flex items-center">
                 <Mail className="mr-2 h-5 w-5 text-eco-600 flex-shrink-0" />

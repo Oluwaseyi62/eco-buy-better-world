@@ -11,30 +11,68 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage 
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Login form schema
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters")
+});
+
+// Register form schema
+const registerSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Please enter a valid email"),
+  phone: z.string().optional(),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  acceptTerms: z.boolean().refine(val => val === true, {
+    message: "You must accept the terms and conditions"
+  })
+});
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, register, isAuthenticated } = useAuth();
+  const { login, register: registerUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Login form state
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [loginLoading, setLoginLoading] = useState(false);
-  
-  // Register form state
-  const [registerEmail, setRegisterEmail] = useState("");
-  const [registerPassword, setRegisterPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   
   // Check if user came from a protected route
   const from = location.state?.from || "/";
+  
+  // Set up forms with validation
+  const loginForm = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: ""
+    }
+  });
+
+  const registerForm = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      password: "",
+      acceptTerms: false
+    }
+  });
   
   useEffect(() => {
     // If user is already authenticated, redirect them
@@ -47,12 +85,15 @@ const LoginPage: React.FC = () => {
     setShowPassword(!showPassword);
   };
   
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (values: z.infer<typeof loginSchema>) => {
     setLoginLoading(true);
     
     try {
-      await login(loginEmail, loginPassword);
+      await login(values.email, values.password);
+      toast({
+        title: "Login successful",
+        description: "Welcome back to EcoBuy!",
+      });
       navigate(from, { replace: true });
     } catch (error) {
       // Error is handled in the AuthContext
@@ -61,22 +102,15 @@ const LoginPage: React.FC = () => {
     }
   };
   
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegister = async (values: z.infer<typeof registerSchema>) => {
     setRegisterLoading(true);
     
-    if (!acceptedTerms) {
-      toast({
-        title: "Terms & Conditions",
-        description: "You must accept the Terms of Service and Privacy Policy",
-        variant: "destructive",
-      });
-      setRegisterLoading(false);
-      return;
-    }
-    
     try {
-      await register(registerEmail, registerPassword, firstName, lastName);
+      await registerUser(values.email, values.password, values.firstName, values.lastName);
+      toast({
+        title: "Registration successful",
+        description: "Welcome to EcoBuy!",
+      });
       navigate(from, { replace: true });
     } catch (error) {
       // Error is handled in the AuthContext
@@ -93,6 +127,7 @@ const LoginPage: React.FC = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarUrl(reader.result as string);
+        registerForm.setValue("firstName", registerForm.getValues("firstName")); // Trigger re-render
       };
       reader.readAsDataURL(file);
     }
@@ -117,198 +152,277 @@ const LoginPage: React.FC = () => {
             </TabsList>
             
             <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <Label htmlFor="login-email">Email</Label>
-                  <Input 
-                    id="login-email" 
-                    type="email" 
-                    placeholder="your@email.com" 
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    required
+              <Form {...loginForm}>
+                <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+                  <FormField
+                    control={loginForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="login-email">Email</FormLabel>
+                        <FormControl>
+                          <Input 
+                            id="login-email" 
+                            type="email" 
+                            placeholder="your@email.com" 
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <div>
-                  <Label htmlFor="login-password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="login-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                    >
-                      {showPassword ? (
-                        <EyeOffIcon className="h-5 w-5" />
-                      ) : (
-                        <EyeIcon className="h-5 w-5" />
-                      )}
-                    </button>
+                  
+                  <FormField
+                    control={loginForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="login-password">Password</FormLabel>
+                        <div className="relative">
+                          <FormControl>
+                            <Input
+                              id="login-password"
+                              type={showPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              {...field}
+                            />
+                          </FormControl>
+                          <button
+                            type="button"
+                            onClick={togglePasswordVisibility}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          >
+                            {showPassword ? (
+                              <EyeOffIcon className="h-5 w-5" />
+                            ) : (
+                              <EyeIcon className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <input
+                        id="remember-me"
+                        name="remember-me"
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-eco-600 focus:ring-eco-500"
+                      />
+                      <label htmlFor="remember-me" className="ml-2 block text-sm text-muted-foreground">
+                        Remember me
+                      </label>
+                    </div>
+                    <a href="#" className="text-sm text-eco-600 hover:text-eco-700">
+                      Forgot password?
+                    </a>
                   </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <input
-                      id="remember-me"
-                      name="remember-me"
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-eco-600 focus:ring-eco-500"
-                    />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-muted-foreground">
-                      Remember me
-                    </label>
-                  </div>
-                  <a href="#" className="text-sm text-eco-600 hover:text-eco-700">
-                    Forgot password?
-                  </a>
-                </div>
-                <Button type="submit" className="w-full bg-eco-600 hover:bg-eco-700" disabled={loginLoading}>
-                  {loginLoading ? "Logging in..." : "Log In"}
-                </Button>
-                <div className="relative mt-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-earth-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Or continue with
-                    </span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mt-6">
-                  <Button variant="outline" className="w-full" type="button">
-                    Google
+                  
+                  <Button type="submit" className="w-full bg-eco-600 hover:bg-eco-700" disabled={loginLoading}>
+                    {loginLoading ? "Logging in..." : "Log In"}
                   </Button>
-                  <Button variant="outline" className="w-full" type="button">
-                    Facebook
-                  </Button>
-                </div>
-              </form>
+                  
+                  <div className="relative mt-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-earth-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or continue with
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 mt-6">
+                    <Button variant="outline" className="w-full" type="button">
+                      Google
+                    </Button>
+                    <Button variant="outline" className="w-full" type="button">
+                      Facebook
+                    </Button>
+                  </div>
+                </form>
+              </Form>
             </TabsContent>
             
             <TabsContent value="register">
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="flex justify-center mb-4">
-                  <div className="relative">
-                    <Avatar className="h-24 w-24">
-                      <AvatarImage src={avatarUrl} />
-                      <AvatarFallback>{firstName && lastName ? `${firstName[0]}${lastName[0]}` : 'U'}</AvatarFallback>
-                    </Avatar>
-                    <label 
-                      htmlFor="avatar-upload" 
-                      className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-eco-600 text-white flex items-center justify-center cursor-pointer"
-                    >
-                      <Upload className="h-4 w-4" />
-                      <input 
-                        id="avatar-upload" 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={handleAvatarChange}
-                      />
-                    </label>
+              <Form {...registerForm}>
+                <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
+                  <div className="flex justify-center mb-4">
+                    <div className="relative">
+                      <Avatar className="h-24 w-24">
+                        <AvatarImage src={avatarUrl} />
+                        <AvatarFallback>
+                          {registerForm.getValues("firstName") && registerForm.getValues("lastName") 
+                            ? `${registerForm.getValues("firstName")[0]}${registerForm.getValues("lastName")[0]}` 
+                            : 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <label 
+                        htmlFor="avatar-upload" 
+                        className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-eco-600 text-white flex items-center justify-center cursor-pointer"
+                      >
+                        <Upload className="h-4 w-4" />
+                        <input 
+                          id="avatar-upload" 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={handleAvatarChange}
+                        />
+                      </label>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="register-first-name">First Name</Label>
-                    <Input 
-                      id="register-first-name" 
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="register-last-name">Last Name</Label>
-                    <Input 
-                      id="register-last-name" 
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="register-email">Email</Label>
-                  <Input 
-                    id="register-email" 
-                    type="email" 
-                    placeholder="your@email.com" 
-                    value={registerEmail}
-                    onChange={(e) => setRegisterEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="register-phone">Phone Number (Optional)</Label>
-                  <Input 
-                    id="register-phone" 
-                    type="tel" 
-                    placeholder="(555) 123-4567" 
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="register-password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="register-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={registerPassword}
-                      onChange={(e) => setRegisterPassword(e.target.value)}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                    >
-                      {showPassword ? (
-                        <EyeOffIcon className="h-5 w-5" />
-                      ) : (
-                        <EyeIcon className="h-5 w-5" />
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={registerForm.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel htmlFor="register-first-name">First Name</FormLabel>
+                          <FormControl>
+                            <Input 
+                              id="register-first-name" 
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </button>
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel htmlFor="register-last-name">Last Name</FormLabel>
+                          <FormControl>
+                            <Input 
+                              id="register-last-name" 
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Must be at least 8 characters and include a number and a special character.
-                  </p>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="terms"
-                    name="terms"
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-eco-600 focus:ring-eco-500"
-                    checked={acceptedTerms}
-                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  
+                  <FormField
+                    control={registerForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="register-email">Email</FormLabel>
+                        <FormControl>
+                          <Input 
+                            id="register-email" 
+                            type="email" 
+                            placeholder="your@email.com" 
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <label htmlFor="terms" className="ml-2 block text-sm text-muted-foreground">
-                    I agree to the{" "}
-                    <a href="#" className="text-eco-600 hover:text-eco-700">
-                      Terms of Service
-                    </a>{" "}
-                    and{" "}
-                    <a href="#" className="text-eco-600 hover:text-eco-700">
-                      Privacy Policy
-                    </a>
-                  </label>
-                </div>
-                <Button type="submit" className="w-full bg-eco-600 hover:bg-eco-700" disabled={registerLoading}>
-                  {registerLoading ? "Creating Account..." : "Create Account"}
-                </Button>
-              </form>
+                  
+                  <FormField
+                    control={registerForm.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="register-phone">Phone Number (Optional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            id="register-phone" 
+                            type="tel" 
+                            placeholder="(555) 123-4567" 
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registerForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="register-password">Password</FormLabel>
+                        <div className="relative">
+                          <FormControl>
+                            <Input
+                              id="register-password"
+                              type={showPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              {...field}
+                            />
+                          </FormControl>
+                          <button
+                            type="button"
+                            onClick={togglePasswordVisibility}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          >
+                            {showPassword ? (
+                              <EyeOffIcon className="h-5 w-5" />
+                            ) : (
+                              <EyeIcon className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Must be at least 6 characters.
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registerForm.control}
+                    name="acceptTerms"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start">
+                        <div className="flex items-center h-5">
+                          <FormControl>
+                            <input
+                              id="terms"
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300 text-eco-600 focus:ring-eco-500"
+                              checked={field.value}
+                              onChange={field.onChange}
+                            />
+                          </FormControl>
+                        </div>
+                        <label htmlFor="terms" className="ml-2 block text-sm text-muted-foreground">
+                          I agree to the{" "}
+                          <a href="#" className="text-eco-600 hover:text-eco-700">
+                            Terms of Service
+                          </a>{" "}
+                          and{" "}
+                          <a href="#" className="text-eco-600 hover:text-eco-700">
+                            Privacy Policy
+                          </a>
+                        </label>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button type="submit" className="w-full bg-eco-600 hover:bg-eco-700" disabled={registerLoading}>
+                    {registerLoading ? "Creating Account..." : "Create Account"}
+                  </Button>
+                </form>
+              </Form>
             </TabsContent>
           </Tabs>
         </div>

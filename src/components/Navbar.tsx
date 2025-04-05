@@ -1,7 +1,6 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingBag, User, Menu, X, LogOut } from "lucide-react";
+import { Search, ShoppingBag, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "@/components/ui/use-toast";
 
 const Navbar: React.FC = () => {
   const isMobile = useIsMobile();
@@ -38,6 +38,14 @@ const Navbar: React.FC = () => {
 
   const handleLoginClick = () => {
     navigate("/auth/login");
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account",
+    });
   };
 
   return (
@@ -151,7 +159,7 @@ const Navbar: React.FC = () => {
                   <Link to="/account/wishlist" className="cursor-pointer">Wishlist</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-500">
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-500">
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </DropdownMenuItem>
@@ -251,7 +259,7 @@ const Navbar: React.FC = () => {
                     <Link to="/account/orders" className="px-3 py-2 rounded-md hover:bg-accent">Orders</Link>
                     <Link to="/account/wishlist" className="px-3 py-2 rounded-md hover:bg-accent">Wishlist</Link>
                     <button 
-                      onClick={logout}
+                      onClick={handleLogout}
                       className="flex items-center px-3 py-2 rounded-md hover:bg-accent text-red-500 text-left"
                     >
                       <LogOut className="mr-2 h-4 w-4" /> Logout

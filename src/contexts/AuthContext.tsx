@@ -43,6 +43,16 @@ interface User {
   cart: CartItem[];
   orders: Order[];
   wishlist: WishlistItem[];
+  verified?: boolean;
+}
+
+interface VerificationData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  code: string;
+  createdAt: number;
 }
 
 interface ProfileUpdateData {
@@ -58,6 +68,8 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
+  verifyAccount: (email: string, code: string) => Promise<void>;
+  resendVerificationCode: (email: string) => Promise<void>;
   logout: () => void;
   updateProfile: (data: ProfileUpdateData) => Promise<void>;
   addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
@@ -119,6 +131,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const foundUser = users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
       
       if (foundUser && foundUser.password === password) { // Exact password check
+        if (!foundUser.verified) {
+          throw new Error("Please verify your email first");
+        }
+        
         const userForSession = {
           id: foundUser.id,
           email: foundUser.email,
@@ -129,7 +145,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           avatarUrl: foundUser.avatarUrl,
           cart: foundUser.cart || [],
           orders: foundUser.orders || [],
-          wishlist: foundUser.wishlist || []
+          wishlist: foundUser.wishlist || [],
+          verified: foundUser.verified
         };
         
         setUser(userForSession);
@@ -159,55 +176,195 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const generateVerificationCode = (): string => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+  const sendVerificationEmail = (email: string, code: string, firstName: string): void => {
+    console.log(`Sending verification code ${code} to ${email}`);
+    // Simulating email sending
+    toast({
+      title: "Verification Code Sent",
+      description: `We've sent a verification code to ${email}. Please check your inbox.`,
+    });
+  };
+
   const register = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
       setIsLoading(true);
       
-      // In a real app, this would be an API call
-      // For demo purposes, we're using mock registration
-      if (email && password && firstName && lastName) {
-        // Check if user already exists
-        const storedUsers = localStorage.getItem("users");
-        const users = storedUsers ? JSON.parse(storedUsers) : [];
-        
-        if (users.some((u: any) => u.email === email)) {
-          return Promise.reject(new Error("User with this email already exists"));
-        }
-        
-        // Mock successful registration
-        const newUser: User = {
-          id: Math.random().toString(36).substring(2, 9),
-          email,
-          name: `${firstName} ${lastName}`,
-          firstName,
-          lastName,
-          cart: [],
-          orders: [],
-          wishlist: []
-        };
-        
-        // Save to "database"
-        users.push({...newUser, password}); // In a real app, never store passwords in plain text
-        localStorage.setItem("users", JSON.stringify(users));
-        
-        // Log the user in
-        const userForSession = {...newUser};
-        localStorage.setItem("user", JSON.stringify(userForSession));
-        setUser(userForSession);
-        
-        toast({
-          title: "Registration successful",
-          description: "Welcome to EcoBuy!",
-          variant: "default",
-        });
-        
-        return Promise.resolve();
-      } else {
+      if (!email || !password || !firstName || !lastName) {
         return Promise.reject(new Error("Please fill in all fields"));
       }
+      
+      // Check if user already exists
+      const storedUsers = localStorage.getItem("users");
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      
+      if (users.some((u: any) => u.email.toLowerCase() === email.toLowerCase())) {
+        return Promise.reject(new Error("User with this email already exists"));
+      }
+      
+      // Generate verification code
+      const verificationCode = generateVerificationCode();
+      
+      // Store pending verification
+      const pendingVerifications = localStorage.getItem("pendingVerifications");
+      const verifications = pendingVerifications ? JSON.parse(pendingVerifications) : [];
+      
+      // Add new verification request
+      const newVerification: VerificationData = {
+        email: email.toLowerCase(),
+        firstName,
+        lastName,
+        password,
+        code: verificationCode,
+        createdAt: Date.now() // To track expiration in a real app
+      };
+      
+      verifications.push(newVerification);
+      localStorage.setItem("pendingVerifications", JSON.stringify(verifications));
+      
+      // Send verification email (simulated)
+      sendVerificationEmail(email, verificationCode, firstName);
+      
+      // Navigate to verification page
+      navigate(`/auth/verify?email=${encodeURIComponent(email)}`);
+      
+      return Promise.resolve();
     } catch (error) {
       toast({
         title: "Registration failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+      return Promise.reject(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyAccount = async (email: string, code: string) => {
+    try {
+      setIsLoading(true);
+      
+      if (!email || !code) {
+        throw new Error("Email and verification code are required");
+      }
+      
+      // Get pending verifications
+      const pendingVerifications = localStorage.getItem("pendingVerifications");
+      if (!pendingVerifications) {
+        throw new Error("No pending verifications found");
+      }
+      
+      const verifications = JSON.parse(pendingVerifications);
+      const verificationIndex = verifications.findIndex(
+        (v: VerificationData) => v.email.toLowerCase() === email.toLowerCase()
+      );
+      
+      if (verificationIndex === -1) {
+        throw new Error("No verification pending for this email");
+      }
+      
+      const verification = verifications[verificationIndex];
+      
+      // In a real app, we might check if the code is expired here
+      
+      if (verification.code !== code) {
+        throw new Error("Invalid verification code");
+      }
+      
+      // Create the user account
+      const newUser: User = {
+        id: Math.random().toString(36).substring(2, 9),
+        email: verification.email,
+        name: `${verification.firstName} ${verification.lastName}`,
+        firstName: verification.firstName,
+        lastName: verification.lastName,
+        cart: [],
+        orders: [],
+        wishlist: [],
+        verified: true
+      };
+      
+      // Save to "database"
+      const storedUsers = localStorage.getItem("users");
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      users.push({...newUser, password: verification.password});
+      localStorage.setItem("users", JSON.stringify(users));
+      
+      // Remove from pending verifications
+      verifications.splice(verificationIndex, 1);
+      localStorage.setItem("pendingVerifications", JSON.stringify(verifications));
+      
+      // Log the user in
+      const userForSession = {...newUser};
+      localStorage.setItem("user", JSON.stringify(userForSession));
+      setUser(userForSession);
+      
+      toast({
+        title: "Account Verified!",
+        description: "Your account has been verified successfully. Welcome to EcoBuy!",
+      });
+      
+      navigate("/");
+      
+      return Promise.resolve();
+    } catch (error) {
+      toast({
+        title: "Verification failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+      return Promise.reject(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resendVerificationCode = async (email: string) => {
+    try {
+      setIsLoading(true);
+      
+      if (!email) {
+        throw new Error("Email is required");
+      }
+      
+      // Get pending verifications
+      const pendingVerifications = localStorage.getItem("pendingVerifications");
+      if (!pendingVerifications) {
+        throw new Error("No pending verifications found");
+      }
+      
+      const verifications = JSON.parse(pendingVerifications);
+      const verificationIndex = verifications.findIndex(
+        (v: VerificationData) => v.email.toLowerCase() === email.toLowerCase()
+      );
+      
+      if (verificationIndex === -1) {
+        throw new Error("No verification pending for this email");
+      }
+      
+      // Generate new code
+      const newCode = generateVerificationCode();
+      
+      // Update verification data
+      verifications[verificationIndex].code = newCode;
+      verifications[verificationIndex].createdAt = Date.now();
+      localStorage.setItem("pendingVerifications", JSON.stringify(verifications));
+      
+      // Send new code
+      sendVerificationEmail(
+        email, 
+        newCode, 
+        verifications[verificationIndex].firstName
+      );
+      
+      return Promise.resolve();
+    } catch (error) {
+      toast({
+        title: "Failed to resend code",
         description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
       });
@@ -413,6 +570,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isLoading, 
         login, 
         register, 
+        verifyAccount,
+        resendVerificationCode,
         logout,
         updateProfile,
         addToCart,

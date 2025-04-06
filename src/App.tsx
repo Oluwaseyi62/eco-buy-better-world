@@ -19,6 +19,7 @@ import ProfilePage from "./pages/account/ProfilePage";
 import OrdersPage from "./pages/account/OrdersPage";
 import WishlistPage from "./pages/account/WishlistPage";
 import LoginPage from "./pages/auth/LoginPage";
+import VerifyPage from "./pages/auth/VerifyPage";
 import ProductPage from "./pages/ProductPage";
 import SearchResults from "./pages/SearchResults";
 
@@ -64,6 +65,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/auth/login" element={<LoginPage />} />
+            <Route path="/auth/verify" element={<VerifyPage />} />
             <Route path="/product/:productId" element={<ProductPage />} />
             <Route path="/search" element={<SearchResults />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

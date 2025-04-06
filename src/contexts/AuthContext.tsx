@@ -118,9 +118,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       const foundUser = users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
       
-      if (foundUser && password === "password") { // Simple password check for demo
-        setUser(foundUser);
-        localStorage.setItem("user", JSON.stringify(foundUser));
+      if (foundUser && foundUser.password === password) { // Exact password check
+        const userForSession = {
+          id: foundUser.id,
+          email: foundUser.email,
+          name: foundUser.name,
+          firstName: foundUser.firstName,
+          lastName: foundUser.lastName,
+          phone: foundUser.phone,
+          avatarUrl: foundUser.avatarUrl,
+          cart: foundUser.cart || [],
+          orders: foundUser.orders || [],
+          wishlist: foundUser.wishlist || []
+        };
+        
+        setUser(userForSession);
+        localStorage.setItem("user", JSON.stringify(userForSession));
         
         toast({
           title: "Login successful",
@@ -128,8 +141,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
         
         return Promise.resolve();
+      } else if (foundUser) {
+        throw new Error("Incorrect password");
       } else {
-        throw new Error("Invalid credentials");
+        throw new Error("User not found");
       }
     } catch (error) {
       console.error("Login error:", error);

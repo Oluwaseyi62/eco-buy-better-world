@@ -125,9 +125,12 @@ const VerifyPage: React.FC = () => {
             <div className="mx-auto w-12 h-12 bg-eco-50 rounded-full flex items-center justify-center mb-4">
               <Mail className="h-6 w-6 text-eco-600" />
             </div>
-            <h1 className="text-2xl font-bold">Verify Your Email</h1>
+            <h1 className="text-2xl font-bold">Complete Your Registration</h1>
             <p className="text-muted-foreground mt-2">
               We've sent a 6-digit verification code to <span className="font-medium">{email}</span>
+            </p>
+            <p className="text-muted-foreground text-sm mt-1">
+              Enter the code below to verify your email and complete registration
             </p>
           </div>
           
@@ -161,7 +164,7 @@ const VerifyPage: React.FC = () => {
                 className="w-full bg-eco-600 hover:bg-eco-700" 
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Verifying..." : "Verify Email"}
+                {isSubmitting ? "Verifying..." : "Complete Registration"}
               </Button>
               
               <div className="text-center mt-4">

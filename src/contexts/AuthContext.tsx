@@ -102,7 +102,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for user in localStorage on initial load
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
@@ -119,18 +118,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      // For demo purposes, we're using mock authentication
       if (!email || !password) {
         throw new Error("Email and password are required");
       }
       
-      // Check localStorage for existing users
       const storedUsers = localStorage.getItem("users");
       const users = storedUsers ? JSON.parse(storedUsers) : [];
       
       const foundUser = users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
       
-      if (foundUser && foundUser.password === password) { // Exact password check
+      if (foundUser && foundUser.password === password) {
         if (!foundUser.verified) {
           throw new Error("Please verify your email first");
         }
@@ -182,7 +179,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const sendVerificationEmail = (email: string, code: string, firstName: string): void => {
     console.log(`Sending verification code ${code} to ${email}`);
-    // Simulating email sending
     toast({
       title: "Verification Code Sent",
       description: `We've sent a verification code to ${email}. Please check your inbox.`,
@@ -197,7 +193,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return Promise.reject(new Error("Please fill in all fields"));
       }
       
-      // Check if user already exists
       const storedUsers = localStorage.getItem("users");
       const users = storedUsers ? JSON.parse(storedUsers) : [];
       
@@ -205,30 +200,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return Promise.reject(new Error("User with this email already exists"));
       }
       
-      // Generate verification code
       const verificationCode = generateVerificationCode();
       
-      // Store pending verification
       const pendingVerifications = localStorage.getItem("pendingVerifications");
       const verifications = pendingVerifications ? JSON.parse(pendingVerifications) : [];
       
-      // Add new verification request
       const newVerification: VerificationData = {
         email: email.toLowerCase(),
         firstName,
         lastName,
         password,
         code: verificationCode,
-        createdAt: Date.now() // To track expiration in a real app
+        createdAt: Date.now()
       };
       
       verifications.push(newVerification);
       localStorage.setItem("pendingVerifications", JSON.stringify(verifications));
       
-      // Send verification email (simulated)
       sendVerificationEmail(email, verificationCode, firstName);
       
-      // Navigate to verification page
       navigate(`/auth/verify?email=${encodeURIComponent(email)}`);
       
       return Promise.resolve();
@@ -252,7 +242,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error("Email and verification code are required");
       }
       
-      // Get pending verifications
       const pendingVerifications = localStorage.getItem("pendingVerifications");
       if (!pendingVerifications) {
         throw new Error("No pending verifications found");
@@ -269,13 +258,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       const verification = verifications[verificationIndex];
       
-      // In a real app, we might check if the code is expired here
-      
       if (verification.code !== code) {
         throw new Error("Invalid verification code");
       }
       
-      // Create the user account
       const newUser: User = {
         id: Math.random().toString(36).substring(2, 9),
         email: verification.email,
@@ -288,27 +274,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         verified: true
       };
       
-      // Save to "database"
       const storedUsers = localStorage.getItem("users");
       const users = storedUsers ? JSON.parse(storedUsers) : [];
       users.push({...newUser, password: verification.password});
       localStorage.setItem("users", JSON.stringify(users));
       
-      // Remove from pending verifications
       verifications.splice(verificationIndex, 1);
       localStorage.setItem("pendingVerifications", JSON.stringify(verifications));
       
-      // Log the user in
-      const userForSession = {...newUser};
-      localStorage.setItem("user", JSON.stringify(userForSession));
-      setUser(userForSession);
-      
       toast({
         title: "Account Verified!",
-        description: "Your account has been verified successfully. Welcome to EcoBuy!",
+        description: "Your account has been verified successfully. You can now log in to EcoBuy!",
       });
       
-      navigate("/");
+      navigate("/auth/login");
       
       return Promise.resolve();
     } catch (error) {
@@ -331,7 +310,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error("Email is required");
       }
       
-      // Get pending verifications
       const pendingVerifications = localStorage.getItem("pendingVerifications");
       if (!pendingVerifications) {
         throw new Error("No pending verifications found");
@@ -346,15 +324,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error("No verification pending for this email");
       }
       
-      // Generate new code
       const newCode = generateVerificationCode();
       
-      // Update verification data
       verifications[verificationIndex].code = newCode;
       verifications[verificationIndex].createdAt = Date.now();
       localStorage.setItem("pendingVerifications", JSON.stringify(verifications));
       
-      // Send new code
       sendVerificationEmail(
         email, 
         newCode, 
@@ -382,17 +357,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error("No user is logged in");
       }
       
-      // Update the user object with new data
       const updatedUser = {
         ...user,
         ...data,
         name: `${data.firstName || user.firstName || ''} ${data.lastName || user.lastName || ''}`.trim(),
       };
       
-      // Update in localStorage for the current session
       localStorage.setItem("user", JSON.stringify(updatedUser));
       
-      // Also update in the "users" collection
       const storedUsers = localStorage.getItem("users");
       if (storedUsers) {
         const users = JSON.parse(storedUsers);
@@ -402,7 +374,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem("users", JSON.stringify(updatedUsers));
       }
       
-      // Update state
       setUser(updatedUser);
       
       return Promise.resolve();
@@ -428,16 +399,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     const quantity = item.quantity || 1;
     
-    // Check if item already exists in cart
     const existingItemIndex = user.cart.findIndex(cartItem => cartItem.id === item.id);
     
     let updatedCart;
     if (existingItemIndex >= 0) {
-      // Increase quantity if item already in cart
       updatedCart = [...user.cart];
       updatedCart[existingItemIndex].quantity += quantity;
     } else {
-      // Add new item to cart
       updatedCart = [...user.cart, { ...item, quantity }];
     }
     
@@ -481,7 +449,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const addToWishlist = (item: Omit<WishlistItem, "inStock"> & { inStock?: boolean }) => {
     if (!user) return;
     
-    // Check if item already exists in wishlist
     if (user.wishlist.some(wishlistItem => wishlistItem.id === item.id)) {
       toast({
         title: "Already in wishlist",
@@ -551,7 +518,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));
     
-    // Also update in the "users" collection
     const storedUsers = localStorage.getItem("users");
     if (storedUsers) {
       const users = JSON.parse(storedUsers);

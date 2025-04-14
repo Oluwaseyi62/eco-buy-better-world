@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -206,7 +207,7 @@ const LoginPage: React.FC = () => {
                         </div>
                         <FormMessage />
                         <div className="text-xs text-muted-foreground mt-1">
-                          For demo: Use the password you created during registration
+                          (For demo purposes, use "password" as the password)
                         </div>
                       </FormItem>
                     )}

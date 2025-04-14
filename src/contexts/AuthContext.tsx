@@ -1,11 +1,6 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
-import { createClient, SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 interface CartItem {
   id: string;
@@ -48,7 +43,6 @@ interface User {
   cart: CartItem[];
   orders: Order[];
   wishlist: WishlistItem[];
-  verified?: boolean;
 }
 
 interface ProfileUpdateData {
@@ -64,8 +58,6 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
-  verifyAccount: (email: string, code: string) => Promise<void>;
-  resendVerificationCode: (email: string) => Promise<void>;
   logout: () => void;
   updateProfile: (data: ProfileUpdateData) => Promise<void>;
   addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
@@ -96,162 +88,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const [supabase] = useState<SupabaseClient>(() => 
-    createClient(supabaseUrl, supabaseAnonKey)
-  );
 
-  // Initialize auth state from Supabase session
   useEffect(() => {
-    const initializeAuth = async () => {
-      setIsLoading(true);
-      
-      // Check if we have a session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user) {
-        await fetchUserProfile(session.user);
-      } else {
-        // Check localStorage for cart/wishlist data for non-authenticated users
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          try {
-            const parsedUser = JSON.parse(storedUser);
-            // Only use cart and wishlist from localStorage if user is not authenticated
-            if (!parsedUser.id.startsWith('auth')) {
-              setUser(parsedUser);
-            }
-          } catch (error) {
-            console.error("Error parsing stored user:", error);
-            localStorage.removeItem("user");
-          }
-        }
+    // Check for user in localStorage on initial load
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Error parsing stored user:", error);
+        localStorage.removeItem("user");
       }
-      
-      setIsLoading(false);
-      
-      // Set up auth state change listener
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          if (event === 'SIGNED_IN' && session?.user) {
-            await fetchUserProfile(session.user);
-          } else if (event === 'SIGNED_OUT') {
-            setUser(null);
-            localStorage.removeItem("user");
-          }
-        }
-      );
-      
-      // Cleanup subscription
-      return () => {
-        subscription.unsubscribe();
-      };
-    };
-    
-    initializeAuth();
-  }, [supabase]);
-
-  // Fetch user profile from Supabase
-  const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
-    try {
-      // Get user profile from profiles table
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', supabaseUser.id)
-        .single();
-      
-      if (error) {
-        console.error("Error fetching profile:", error);
-        
-        // If profile doesn't exist, create one
-        if (error.code === 'PGRST116') {
-          const newProfile = {
-            id: supabaseUser.id,
-            email: supabaseUser.email,
-            first_name: '',
-            last_name: '',
-            cart: [],
-            orders: [],
-            wishlist: []
-          };
-          
-          await supabase.from('profiles').insert(newProfile);
-          
-          const userObj: User = {
-            id: supabaseUser.id,
-            email: supabaseUser.email || '',
-            name: '',
-            cart: [],
-            orders: [],
-            wishlist: [],
-            verified: supabaseUser.email_confirmed_at ? true : false
-          };
-          
-          setUser(userObj);
-          localStorage.setItem("user", JSON.stringify(userObj));
-          return;
-        }
-      }
-      
-      // Get cart, orders, and wishlist
-      const cart = profile?.cart || [];
-      const orders = profile?.orders || [];
-      const wishlist = profile?.wishlist || [];
-      
-      const userObj: User = {
-        id: supabaseUser.id,
-        email: supabaseUser.email || '',
-        name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim(),
-        firstName: profile?.first_name,
-        lastName: profile?.last_name,
-        phone: profile?.phone,
-        avatarUrl: profile?.avatar_url,
-        cart,
-        orders,
-        wishlist,
-        verified: supabaseUser.email_confirmed_at ? true : false
-      };
-      
-      setUser(userObj);
-      localStorage.setItem("user", JSON.stringify(userObj));
-    } catch (error) {
-      console.error("Error in fetchUserProfile:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load user profile",
-        variant: "destructive",
-      });
     }
-  };
+    setIsLoading(false);
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
       
+      // For demo purposes, we're using mock authentication
       if (!email || !password) {
         throw new Error("Email and password are required");
       }
       
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      // Check localStorage for existing users
+      const storedUsers = localStorage.getItem("users");
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
       
-      if (error) {
-        throw error;
+      const foundUser = users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
+      
+      if (foundUser && password === "password") { // Simple password check for demo
+        setUser(foundUser);
+        localStorage.setItem("user", JSON.stringify(foundUser));
+        
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+        
+        return Promise.resolve();
+      } else {
+        throw new Error("Invalid credentials");
       }
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
-      
-      return Promise.resolve();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Login error:", error);
       toast({
         title: "Login failed",
-        description: error.message || "Please try again",
+        description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
       });
       return Promise.reject(error);
@@ -264,117 +148,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      if (!email || !password || !firstName || !lastName) {
+      // In a real app, this would be an API call
+      // For demo purposes, we're using mock registration
+      if (email && password && firstName && lastName) {
+        // Check if user already exists
+        const storedUsers = localStorage.getItem("users");
+        const users = storedUsers ? JSON.parse(storedUsers) : [];
+        
+        if (users.some((u: any) => u.email === email)) {
+          return Promise.reject(new Error("User with this email already exists"));
+        }
+        
+        // Mock successful registration
+        const newUser: User = {
+          id: Math.random().toString(36).substring(2, 9),
+          email,
+          name: `${firstName} ${lastName}`,
+          firstName,
+          lastName,
+          cart: [],
+          orders: [],
+          wishlist: []
+        };
+        
+        // Save to "database"
+        users.push({...newUser, password}); // In a real app, never store passwords in plain text
+        localStorage.setItem("users", JSON.stringify(users));
+        
+        // Log the user in
+        const userForSession = {...newUser};
+        localStorage.setItem("user", JSON.stringify(userForSession));
+        setUser(userForSession);
+        
+        toast({
+          title: "Registration successful",
+          description: "Welcome to EcoBuy!",
+          variant: "default",
+        });
+        
+        return Promise.resolve();
+      } else {
         return Promise.reject(new Error("Please fill in all fields"));
       }
-      
-      // Register user with Supabase Auth
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName
-          },
-          emailRedirectTo: `${window.location.origin}/auth/login`
-        }
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      toast({
-        title: "Registration successful",
-        description: "Please check your email to verify your account.",
-      });
-      
-      navigate(`/auth/verify?email=${encodeURIComponent(email)}`);
-      
-      return Promise.resolve();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Registration failed",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-      return Promise.reject(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const verifyAccount = async (email: string, code: string) => {
-    try {
-      setIsLoading(true);
-      
-      if (!email || !code) {
-        throw new Error("Email and verification code are required");
-      }
-      
-      // Verify with Supabase
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: code,
-        type: 'signup'
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      toast({
-        title: "Account Verified!",
-        description: "Your account has been verified successfully. You can now log in to EcoBuy!",
-      });
-      
-      navigate("/auth/login");
-      
-      return Promise.resolve();
-    } catch (error: any) {
-      toast({
-        title: "Verification failed",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-      return Promise.reject(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const resendVerificationCode = async (email: string) => {
-    try {
-      setIsLoading(true);
-      
-      if (!email) {
-        throw new Error("Email is required");
-      }
-      
-      // Resend verification email with Supabase
-      const { error } = await supabase.auth.resend({
-        email,
-        type: 'signup',
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/login`
-        }
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      toast({
-        title: "Verification Code Sent",
-        description: `We've sent a new verification code to ${email}. Please check your inbox.`,
-      });
-      
-      return Promise.resolve();
-    } catch (error: any) {
-      toast({
-        title: "Failed to resend code",
-        description: error.message || "Please try again",
+        description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
       });
       return Promise.reject(error);
@@ -391,205 +210,106 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error("No user is logged in");
       }
       
-      // Update profile in Supabase
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          first_name: data.firstName || user.firstName,
-          last_name: data.lastName || user.lastName,
-          phone: data.phone || user.phone,
-          avatar_url: data.avatarUrl || user.avatarUrl
-        })
-        .eq('id', user.id);
-      
-      if (error) {
-        throw error;
-      }
-      
+      // Update the user object with new data
       const updatedUser = {
         ...user,
         ...data,
         name: `${data.firstName || user.firstName || ''} ${data.lastName || user.lastName || ''}`.trim(),
       };
       
-      setUser(updatedUser);
+      // Update in localStorage for the current session
       localStorage.setItem("user", JSON.stringify(updatedUser));
       
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully."
-      });
+      // Also update in the "users" collection
+      const storedUsers = localStorage.getItem("users");
+      if (storedUsers) {
+        const users = JSON.parse(storedUsers);
+        const updatedUsers = users.map((u: any) => 
+          u.id === user.id ? {...u, ...updatedUser} : u
+        );
+        localStorage.setItem("users", JSON.stringify(updatedUsers));
+      }
+      
+      // Update state
+      setUser(updatedUser);
       
       return Promise.resolve();
-    } catch (error: any) {
-      toast({
-        title: "Failed to update profile",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
+    } catch (error) {
       return Promise.reject(error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = async () => {
-    try {
-      await supabase.auth.signOut();
-      localStorage.removeItem("user");
-      setUser(null);
-      navigate("/");
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out",
-      });
-    } catch (error: any) {
-      console.error("Logout error:", error);
-      toast({
-        title: "Logout failed",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    }
+  const logout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/");
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out",
+    });
   };
 
-  // Cart management functions
-  const addToCart = async (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
+  const addToCart = (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
     if (!user) return;
     
     const quantity = item.quantity || 1;
     
-    try {
-      const existingItemIndex = user.cart.findIndex(cartItem => cartItem.id === item.id);
-      
-      let updatedCart;
-      if (existingItemIndex >= 0) {
-        updatedCart = [...user.cart];
-        updatedCart[existingItemIndex].quantity += quantity;
-      } else {
-        updatedCart = [...user.cart, { ...item, quantity }];
-      }
-      
-      const updatedUser = { ...user, cart: updatedCart };
-      
-      // If authenticated, update in Supabase
-      if (user.id.startsWith('auth')) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ cart: updatedCart })
-          .eq('id', user.id);
-          
-        if (error) throw error;
-      }
-      
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      
-      toast({
-        title: "Added to cart",
-        description: `${item.name} has been added to your cart`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Failed to add to cart",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
+    // Check if item already exists in cart
+    const existingItemIndex = user.cart.findIndex(cartItem => cartItem.id === item.id);
+    
+    let updatedCart;
+    if (existingItemIndex >= 0) {
+      // Increase quantity if item already in cart
+      updatedCart = [...user.cart];
+      updatedCart[existingItemIndex].quantity += quantity;
+    } else {
+      // Add new item to cart
+      updatedCart = [...user.cart, { ...item, quantity }];
     }
+    
+    const updatedUser = { ...user, cart: updatedCart };
+    updateUserData(updatedUser);
+    
+    toast({
+      title: "Added to cart",
+      description: `${item.name} has been added to your cart`,
+    });
   };
 
-  const removeFromCart = async (itemId: string) => {
+  const removeFromCart = (itemId: string) => {
     if (!user) return;
     
-    try {
-      const updatedCart = user.cart.filter(item => item.id !== itemId);
-      const updatedUser = { ...user, cart: updatedCart };
-      
-      // If authenticated, update in Supabase
-      if (user.id.startsWith('auth')) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ cart: updatedCart })
-          .eq('id', user.id);
-          
-        if (error) throw error;
-      }
-      
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-    } catch (error: any) {
-      toast({
-        title: "Failed to remove from cart",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    }
+    const updatedCart = user.cart.filter(item => item.id !== itemId);
+    const updatedUser = { ...user, cart: updatedCart };
+    updateUserData(updatedUser);
   };
 
-  const updateCartItemQuantity = async (itemId: string, quantity: number) => {
+  const updateCartItemQuantity = (itemId: string, quantity: number) => {
     if (!user) return;
     
     if (quantity < 1) return;
     
-    try {
-      const updatedCart = user.cart.map(item => 
-        item.id === itemId ? { ...item, quantity } : item
-      );
-      
-      const updatedUser = { ...user, cart: updatedCart };
-      
-      // If authenticated, update in Supabase
-      if (user.id.startsWith('auth')) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ cart: updatedCart })
-          .eq('id', user.id);
-          
-        if (error) throw error;
-      }
-      
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-    } catch (error: any) {
-      toast({
-        title: "Failed to update cart",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    }
+    const updatedCart = user.cart.map(item => 
+      item.id === itemId ? { ...item, quantity } : item
+    );
+    
+    const updatedUser = { ...user, cart: updatedCart };
+    updateUserData(updatedUser);
   };
 
-  const clearCart = async () => {
+  const clearCart = () => {
     if (!user) return;
     
-    try {
-      const updatedUser = { ...user, cart: [] };
-      
-      // If authenticated, update in Supabase
-      if (user.id.startsWith('auth')) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ cart: [] })
-          .eq('id', user.id);
-          
-        if (error) throw error;
-      }
-      
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-    } catch (error: any) {
-      toast({
-        title: "Failed to clear cart",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    }
+    const updatedUser = { ...user, cart: [] };
+    updateUserData(updatedUser);
   };
 
-  // Wishlist management functions
-  const addToWishlist = async (item: Omit<WishlistItem, "inStock"> & { inStock?: boolean }) => {
+  const addToWishlist = (item: Omit<WishlistItem, "inStock"> & { inStock?: boolean }) => {
     if (!user) return;
     
+    // Check if item already exists in wishlist
     if (user.wishlist.some(wishlistItem => wishlistItem.id === item.id)) {
       toast({
         title: "Already in wishlist",
@@ -598,154 +318,75 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return;
     }
     
-    try {
-      const updatedWishlist = [...user.wishlist, { ...item, inStock: item.inStock ?? true }];
-      const updatedUser = { ...user, wishlist: updatedWishlist };
-      
-      // If authenticated, update in Supabase
-      if (user.id.startsWith('auth')) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ wishlist: updatedWishlist })
-          .eq('id', user.id);
-          
-        if (error) throw error;
-      }
-      
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      
-      toast({
-        title: "Added to wishlist",
-        description: `${item.name} has been added to your wishlist`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Failed to add to wishlist",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    }
+    const updatedWishlist = [...user.wishlist, { ...item, inStock: item.inStock ?? true }];
+    const updatedUser = { ...user, wishlist: updatedWishlist };
+    updateUserData(updatedUser);
+    
+    toast({
+      title: "Added to wishlist",
+      description: `${item.name} has been added to your wishlist`,
+    });
   };
 
-  const removeFromWishlist = async (itemId: string) => {
+  const removeFromWishlist = (itemId: string) => {
     if (!user) return;
     
-    try {
-      const updatedWishlist = user.wishlist.filter(item => item.id !== itemId);
-      const updatedUser = { ...user, wishlist: updatedWishlist };
-      
-      // If authenticated, update in Supabase
-      if (user.id.startsWith('auth')) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ wishlist: updatedWishlist })
-          .eq('id', user.id);
-          
-        if (error) throw error;
-      }
-      
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-    } catch (error: any) {
-      toast({
-        title: "Failed to remove from wishlist",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    }
+    const updatedWishlist = user.wishlist.filter(item => item.id !== itemId);
+    const updatedUser = { ...user, wishlist: updatedWishlist };
+    updateUserData(updatedUser);
   };
 
-  const clearWishlist = async () => {
+  const clearWishlist = () => {
     if (!user) return;
     
-    try {
-      const updatedUser = { ...user, wishlist: [] };
-      
-      // If authenticated, update in Supabase
-      if (user.id.startsWith('auth')) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ wishlist: [] })
-          .eq('id', user.id);
-          
-        if (error) throw error;
-      }
-      
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-    } catch (error: any) {
-      toast({
-        title: "Failed to clear wishlist",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    }
+    const updatedUser = { ...user, wishlist: [] };
+    updateUserData(updatedUser);
   };
 
-  const createOrder = async (): Promise<string | null> => {
+  const createOrder = (): string | null => {
     if (!user || user.cart.length === 0) return null;
     
-    try {
-      const orderId = `ORD-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-      const orderDate = new Date().toISOString();
-      
-      const newOrder: Order = {
-        id: orderId,
-        date: orderDate,
-        status: "processing",
-        total: user.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-        items: user.cart.map(item => ({
-          id: item.id,
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-          image: item.image
-        }))
-      };
-      
-      const updatedOrders = [...user.orders, newOrder];
-      const updatedUser = { ...user, orders: updatedOrders, cart: [] };
-      
-      // If authenticated, update in Supabase
-      if (user.id.startsWith('auth')) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ 
-            orders: updatedOrders,
-            cart: []
-          })
-          .eq('id', user.id);
-          
-        if (error) throw error;
-        
-        // You could also store orders in a separate table
-        await supabase.from('orders').insert({
-          id: orderId,
-          user_id: user.id,
-          order_date: orderDate,
-          status: "processing",
-          total: newOrder.total,
-          items: newOrder.items
-        });
-      }
-      
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      
-      toast({
-        title: "Order placed!",
-        description: `Your order #${orderId} has been placed successfully.`,
-      });
-      
-      return orderId;
-    } catch (error: any) {
-      toast({
-        title: "Failed to place order",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-      return null;
+    const orderId = `ORD-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    const orderDate = new Date().toISOString();
+    
+    const newOrder: Order = {
+      id: orderId,
+      date: orderDate,
+      status: "processing",
+      total: user.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+      items: user.cart.map(item => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        image: item.image
+      }))
+    };
+    
+    const updatedOrders = [...user.orders, newOrder];
+    const updatedUser = { ...user, orders: updatedOrders, cart: [] };
+    updateUserData(updatedUser);
+    
+    toast({
+      title: "Order placed!",
+      description: `Your order #${orderId} has been placed successfully.`,
+    });
+    
+    return orderId;
+  };
+
+  const updateUserData = (updatedUser: User) => {
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    
+    // Also update in the "users" collection
+    const storedUsers = localStorage.getItem("users");
+    if (storedUsers) {
+      const users = JSON.parse(storedUsers);
+      const updatedUsers = users.map((u: any) => 
+        u.id === updatedUser.id ? {...u, ...updatedUser} : u
+      );
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
     }
   };
 
@@ -757,8 +398,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isLoading, 
         login, 
         register, 
-        verifyAccount,
-        resendVerificationCode,
         logout,
         updateProfile,
         addToCart,

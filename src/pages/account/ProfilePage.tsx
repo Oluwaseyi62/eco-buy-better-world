@@ -19,6 +19,12 @@ const ProfilePage: React.FC = () => {
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   const handleSaveChanges = async () => {
     setLoading(true);
@@ -42,6 +48,82 @@ const ProfilePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePasswordChange = () => {
+    setPasswordLoading(true);
+    
+    // Validate inputs
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast({
+        title: "Error",
+        description: "All password fields are required",
+        variant: "destructive",
+      });
+      setPasswordLoading(false);
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords don't match",
+        variant: "destructive",
+      });
+      setPasswordLoading(false);
+      return;
+    }
+    
+    // Get users from localStorage
+    const storedUsers = localStorage.getItem("users");
+    if (!storedUsers || !user) {
+      toast({
+        title: "Error",
+        description: "User data not found",
+        variant: "destructive",
+      });
+      setPasswordLoading(false);
+      return;
+    }
+    
+    const users = JSON.parse(storedUsers);
+    const userIndex = users.findIndex((u: any) => u.id === user.id);
+    
+    if (userIndex === -1) {
+      toast({
+        title: "Error",
+        description: "User not found",
+        variant: "destructive",
+      });
+      setPasswordLoading(false);
+      return;
+    }
+    
+    // Verify current password
+    if (users[userIndex].password !== currentPassword) {
+      toast({
+        title: "Error",
+        description: "Current password is incorrect",
+        variant: "destructive",
+      });
+      setPasswordLoading(false);
+      return;
+    }
+    
+    // Update password
+    users[userIndex].password = newPassword;
+    localStorage.setItem("users", JSON.stringify(users));
+    
+    // Clear password fields
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    
+    toast({
+      title: "Success",
+      description: "Your password has been updated",
+    });
+    setPasswordLoading(false);
   };
 
   const handleAvatarClick = () => {
@@ -178,20 +260,42 @@ const ProfilePage: React.FC = () => {
               <div className="grid gap-4">
                 <div>
                   <Label htmlFor="currentPassword">Current Password</Label>
-                  <Input id="currentPassword" type="password" className="mt-1" />
+                  <Input 
+                    id="currentPassword" 
+                    type="password" 
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="mt-1" 
+                  />
                 </div>
                 <div>
                   <Label htmlFor="newPassword">New Password</Label>
-                  <Input id="newPassword" type="password" className="mt-1" />
+                  <Input 
+                    id="newPassword" 
+                    type="password" 
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="mt-1" 
+                  />
                 </div>
                 <div>
                   <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input id="confirmPassword" type="password" className="mt-1" />
+                  <Input 
+                    id="confirmPassword" 
+                    type="password" 
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="mt-1" 
+                  />
                 </div>
               </div>
               
-              <Button className="bg-eco-600 hover:bg-eco-700">
-                Update Password
+              <Button 
+                className="bg-eco-600 hover:bg-eco-700" 
+                onClick={handlePasswordChange}
+                disabled={passwordLoading}
+              >
+                {passwordLoading ? "Updating..." : "Update Password"}
               </Button>
             </div>
           </div>

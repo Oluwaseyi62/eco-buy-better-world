@@ -444,7 +444,7 @@ const LoginPage: React.FC = () => {
           </Tabs>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 };

@@ -87,35 +87,6 @@ const Index: React.FC = () => {
       <main className="flex-1">
         <Hero />
         
-        <section className="py-16 bg-earth-50">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4 animate-fade-in">
-                Why Shop with EcoBuy?
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
-                We're building a marketplace that makes sustainable shopping accessible, 
-                affordable, and transparent for everyone.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {features.map((feature, index) => (
-                <div 
-                  key={index} 
-                  ref={(el) => (featureRefs.current[index] = el)}
-                  className="rounded-xl bg-white p-6 shadow-sm transition-all duration-500 hover:shadow-md opacity-0 translate-y-10 transform"
-                >
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-eco-100 transition-all duration-300 hover:scale-110">
-                    {feature.icon}
-                  </div>
-                  <h3 className="mb-2 text-xl font-semibold">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
         
         <FeaturedProducts />
         
@@ -150,6 +121,36 @@ const Index: React.FC = () => {
             </div>
           </div>
         </section>
+        <section className="py-16 bg-earth-100">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4 animate-fade-in">
+                Why Shop with EcoBuy?
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
+                We're building a marketplace that makes sustainable shopping accessible, 
+                affordable, and transparent for everyone.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {features.map((feature, index) => (
+                <div 
+                  key={index} 
+                  ref={(el) => (featureRefs.current[index] = el)}
+                  className="rounded-xl bg-white p-6 shadow-sm transition-all duration-500 hover:shadow-md opacity-0 translate-y-10 transform"
+                >
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-eco-100 transition-all duration-300 hover:scale-110">
+                    {feature.icon}
+                  </div>
+                  <h3 className="mb-2 text-xl font-semibold">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
       </main>
       <Footer />
     </div>

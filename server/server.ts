@@ -6,7 +6,7 @@ import path from "path";
 import bodyParser from "body-parser";
 import { errorMiddleware } from "./middleware/errorMiddleware";
 import dbConnection from "./db";
-import router from "./routes";
+import router from "./routes/index";
 
 dotenv.config();
 const app = express();

@@ -125,7 +125,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error("Email and password are required");
       }
 
-      const response = await fetch("http://localhost:3000/api/auth/login", {
+      const response = await fetch("https://eco-buy-better-world.onrender.com/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -183,7 +183,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (email && password && firstName && lastName) {
         // Check if user already exists
         const response = await fetch(
-          "http://localhost:3000/api/auth/register",
+          "https://eco-buy-better-world.onrender.com/api/auth/register",
           {
             method: "POST",
             headers: {

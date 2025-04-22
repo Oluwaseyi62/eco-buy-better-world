@@ -25,7 +25,7 @@ export default function GoogleLoginButton() {
     const token = credentialResponse.credential; // ✅ This is the Google ID Token
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/google-login", {
+      const res = await fetch("https://eco-buy-better-world.onrender.com/api/auth/google-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),

@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES2020",                       // Modern JS output
-    "module": "CommonJS",                     // Node uses CommonJS
-    "rootDir": "./",                          // Since no src folder yet
-    "outDir": "./dist",                       // Compiled JS output
-    "esModuleInterop": true,                  // Allow `import express from 'express'`
-    "strict": true,                           // Optional: enables all strict type-checking
+    "target": "ES2020",
+    "module": "CommonJS",
+    "outDir": "dist",
+    "rootDir": "server",
+    "esModuleInterop": true,
+    "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["./**/*.ts"],                   // All TS files
+  "include": ["server/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

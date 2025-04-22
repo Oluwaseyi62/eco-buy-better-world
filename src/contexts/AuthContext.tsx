@@ -143,11 +143,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const data = await response.json();
-      const user = data.user;
-      console.log("userfromher", user);
+      const newUser: User = {
+        id: data.user.id,
+        email: data.user.email,
+        name: `${data.user.firstName} ${data.user.lastName}`,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        cart: [],
+        orders: [],
+        wishlist: [],
+      };
 
-      setUser(user);
-      localStorage.setItem("user", JSON.stringify(user));
+      const userForSession = { ...newUser };
+        localStorage.setItem("user", JSON.stringify(userForSession));
+        setUser(userForSession);
 
       toast({
         title: "Login successful",

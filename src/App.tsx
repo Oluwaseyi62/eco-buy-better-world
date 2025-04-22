@@ -22,15 +22,20 @@ import LoginPage from "./pages/auth/LoginPage";
 import VerifyPage from "./pages/auth/VerifyPage";
 import ProductPage from "./pages/ProductPage";
 import SearchResults from "./pages/SearchResults";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
 const App = () => (
+  
   <QueryClientProvider client={queryClient}>
+   
     <TooltipProvider>
+      
       <Toaster />
       <Sonner />
       <BrowserRouter>
+      <ScrollToTop />
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />

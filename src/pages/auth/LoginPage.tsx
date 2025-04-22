@@ -9,6 +9,8 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GoogleLogin } from "@react-oauth/google";
+import GoogleLoginButton from "@/components/ui/GoogleLoginButton";
 import { 
   Form,
   FormControl,
@@ -84,7 +86,29 @@ const LoginPage: React.FC = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-  
+  //   const handleGoogle = async ()=> {
+  //     const response = await fetch("http://localhost:3000/api/auth/google-login", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  // body: JSON.stringify({ token: googleIdToken }),
+  //      })
+  //      const data = await response.json() 
+  //      console.log('fromgoogel', data)
+  //       if (response.ok) {
+  //         toast({
+  //           title: "Success",
+  //           description: "You have successfully logged in with Google!",
+  //           variant: "default",
+  //         });
+  //         navigate(from, { replace: true });
+  //       } else {
+  //         toast({
+  //           title: "Error",
+  //           description: data.message,
+  //           variant: "destructive",
+  //         });
+  //       }
+  //   }
   const handleLogin = async (values: z.infer<typeof loginSchema>) => {
     setLoginLoading(true);
     setLoginError(null);
@@ -249,9 +273,10 @@ const LoginPage: React.FC = () => {
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4 mt-6">
-                    <Button variant="outline" className="w-full" type="button">
+                    {/* <Button variant="outline"  onClick={handleGoogle} className="w-full" type="button">
                       Google
-                    </Button>
+                    </Button> */}
+                   <GoogleLoginButton />
                     <Button variant="outline" className="w-full" type="button">
                       Facebook
                     </Button>
@@ -435,7 +460,7 @@ const LoginPage: React.FC = () => {
                     )}
                   />
                   
-                  <Button type="submit" className="w-full bg-eco-600 hover:bg-eco-700" disabled={registerLoading}>
+                  <Button type="submit"  className="w-full bg-eco-600 hover:bg-eco-700" disabled={registerLoading}>
                     {registerLoading ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>

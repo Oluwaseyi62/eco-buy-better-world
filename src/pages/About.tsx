@@ -115,7 +115,7 @@ const About: React.FC = () => {
                 />
               </div>
               <h3 className="font-semibold mb-1">Ayoade Oluwaseyi</h3>
-              <p className="text-muted-foreground">Founder & CEO</p>
+              <p className="text-muted-foreground">Founder & Software Engineer</p>
             </div>
             <div className="text-center">
               <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4">
@@ -125,19 +125,30 @@ const About: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h3 className="font-semibold mb-1">Michael Torres</h3>
-              <p className="text-muted-foreground">Head of Sustainability</p>
+              <h3 className="font-semibold mb-1">Adeniji Eniola </h3>
+              <p className="text-muted-foreground">Co Founder & Backend Engineer</p>
             </div>
             <div className="text-center">
               <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=2000&auto=format&fit=crop" 
+                  src="./goodie.jpg" 
                   alt="Team member" 
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h3 className="font-semibold mb-1">Sarah Johnson</h3>
-              <p className="text-muted-foreground">Product Director</p>
+              <h3 className="font-semibold mb-1">Agbeje Goodness</h3>
+              <p className="text-muted-foreground">Co Founder & Designer</p>
+            </div>
+            <div className="text-center">
+              <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4">
+                <img 
+                  src="./victor.jpg" 
+                  alt="Team member" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h3 className="font-semibold mb-1">Victor Essien</h3>
+              <p className="text-muted-foreground">Co Founder & Software Engineer</p>
             </div>
           </div>
         </div>

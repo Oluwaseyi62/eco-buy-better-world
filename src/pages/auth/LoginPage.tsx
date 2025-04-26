@@ -230,7 +230,7 @@ const LoginPage: React.FC = () => {
                         </div>
                         <FormMessage />
                         <div className="text-xs text-muted-foreground mt-1">
-                          For demo: Use the password you created during registration
+                           Use the password you created during registration
                         </div>
                       </FormItem>
                     )}

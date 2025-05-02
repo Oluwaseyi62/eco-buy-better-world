@@ -2,7 +2,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { categories } from "@/data/products";
+import { categories, products } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
 import { useQuery } from "@tanstack/react-query";
 import { Product } from "@/types";
@@ -13,64 +13,18 @@ const CategoryPage: React.FC = () => {
   // Find the current category
   const category = categories.find(cat => cat.id === categoryId);
 
-  // Mock fetch function - in a real app, this would call an API
+  // Fetch products by category from our data
   const fetchCategoryProducts = async (): Promise<Product[]> => {
-    // For demo purposes, return filtered products from the imported data
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Normally this would be an API call filtering by category
-        const mockProducts: Product[] = [
-          {
-            id: "1",
-            name: "Bamboo Utensil Set",
-            description: "Reusable bamboo utensils perfect for on-the-go meals. Includes fork, knife, spoon, and chopsticks in a compact carrying case.",
-            price: 19.99,
-            image: "https://images.unsplash.com/photo-1584346133934-7a7398d0c777?q=80&w=2000&auto=format&fit=crop",
-            category: categoryId || "kitchen",
-            sustainabilityScore: 4.5,
-            inStock: true,
-            isOnSale: false
-          },
-          {
-            id: "2",
-            name: "Organic Cotton Tote Bag",
-            description: "Durable, washable tote made from 100% organic cotton. Perfect for grocery shopping or daily use.",
-            price: 14.99,
-            image: "https://images.unsplash.com/photo-1619627261985-1ad98c30f15f?q=80&w=2000&auto=format&fit=crop",
-            category: categoryId || "accessories",
-            sustainabilityScore: 5.0,
-            inStock: true,
-            isOnSale: true
-          },
-          {
-            id: "3",
-            name: "Recycled Glass Water Bottle",
-            description: "Beautiful water bottle made from recycled glass with a silicone protective sleeve.",
-            price: 24.99,
-            image: "https://images.unsplash.com/photo-1638184984605-af1f05249a56?q=80&w=2000&auto=format&fit=crop",
-            category: categoryId || "home",
-            sustainabilityScore: 4.8,
-            inStock: true,
-            isOnSale: false
-          },
-          {
-            id: "4",
-            name: "Biodegradable Phone Case",
-            description: "Protect your phone with this fully compostable phone case made from plant-based materials.",
-            price: 29.99,
-            image: "https://images.unsplash.com/photo-1609081219090-a6d81d3085bf?q=80&w=2000&auto=format&fit=crop",
-            category: categoryId || "tech",
-            sustainabilityScore: 4.2,
-            inStock: true,
-            isOnSale: true
-          }
-        ];
-        resolve(mockProducts);
-      }, 500); // Simulate network delay
+        // Filter products by the current category
+        const categoryProducts = products.filter(product => product.category === categoryId);
+        resolve(categoryProducts);
+      }, 300); // Small delay to simulate API call
     });
   };
 
-  const { data: products, isLoading } = useQuery({
+  const { data: categoryProducts, isLoading } = useQuery({
     queryKey: ['products', categoryId],
     queryFn: fetchCategoryProducts,
   });
@@ -93,11 +47,15 @@ const CategoryPage: React.FC = () => {
               <div key={i} className="rounded-lg bg-gray-100 animate-pulse h-[350px]"></div>
             ))}
           </div>
-        ) : (
+        ) : categoryProducts && categoryProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products?.map((product) => (
+            {categoryProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-xl text-muted-foreground">No products found in this category</p>
           </div>
         )}
       </div>

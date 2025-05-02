@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -20,76 +19,55 @@ import {
 } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import SustainabilityScore from "@/components/SustainabilityScore";
+import { products as allProducts } from "@/data/products";
 
 const ProductPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
   const [quantity, setQuantity] = useState(1);
   
-  // Mock fetch function for a single product
+  // Fetch product from our data source
   const fetchProduct = async (): Promise<Product> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       setTimeout(() => {
-        // Normally this would be an API call
-        const mockProduct: Product = {
-          id: productId || "1",
-          name: "Bamboo Utensil Set",
-          description: "Reusable bamboo utensils perfect for on-the-go meals. Includes fork, knife, spoon, and chopsticks in a compact carrying case. These utensils are made from sustainably harvested bamboo, a fast-growing renewable resource that doesn't require pesticides or fertilizers to grow.",
-          price: 19.99,
-          image: "https://images.unsplash.com/photo-1584346133934-7a7398d0c777?q=80&w=2000&auto=format&fit=crop",
-          category: "kitchen",
-          sustainabilityScore: 4.5,
-          inStock: true,
-          isOnSale: false
-        };
-        
-        resolve(mockProduct);
-      }, 500); // Simulate network delay
+        const foundProduct = allProducts.find(p => p.id === productId);
+        if (foundProduct) {
+          resolve(foundProduct);
+        } else {
+          // If product not found in our data, use the mock product
+          const mockProduct: Product = {
+            id: productId || "1",
+            name: "Bamboo Utensil Set",
+            description: "Reusable bamboo utensils perfect for on-the-go meals. Includes fork, knife, spoon, and chopsticks in a compact carrying case. These utensils are made from sustainably harvested bamboo, a fast-growing renewable resource that doesn't require pesticides or fertilizers to grow.",
+            price: 19.99,
+            image: "https://images.unsplash.com/photo-1584346133934-7a7398d0c777?q=80&w=2000&auto=format&fit=crop",
+            category: "kitchen",
+            sustainabilityScore: 4.5,
+            inStock: true,
+            isOnSale: false
+          };
+          resolve(mockProduct);
+        }
+      }, 300);
     });
   };
   
-  // Mock fetch function for related products
+  // Fetch related products based on category
   const fetchRelatedProducts = async (): Promise<Product[]> => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Normally this would be an API call
-        const mockProducts: Product[] = [
-          {
-            id: "2",
-            name: "Organic Cotton Tote Bag",
-            description: "Durable, washable tote made from 100% organic cotton. Perfect for grocery shopping or daily use.",
-            price: 14.99,
-            image: "https://images.unsplash.com/photo-1619627261985-1ad98c30f15f?q=80&w=2000&auto=format&fit=crop",
-            category: "accessories",
-            sustainabilityScore: 5.0,
-            inStock: true,
-            isOnSale: true
-          },
-          {
-            id: "3",
-            name: "Recycled Glass Water Bottle",
-            description: "Beautiful water bottle made from recycled glass with a silicone protective sleeve.",
-            price: 24.99,
-            image: "https://images.unsplash.com/photo-1638184984605-af1f05249a56?q=80&w=2000&auto=format&fit=crop",
-            category: "home",
-            sustainabilityScore: 4.8,
-            inStock: true,
-            isOnSale: false
-          },
-          {
-            id: "4",
-            name: "Biodegradable Phone Case",
-            description: "Protect your phone with this fully compostable phone case made from plant-based materials.",
-            price: 29.99,
-            image: "https://images.unsplash.com/photo-1609081219090-a6d81d3085bf?q=80&w=2000&auto=format&fit=crop",
-            category: "tech",
-            sustainabilityScore: 4.2,
-            inStock: true,
-            isOnSale: true
-          }
-        ];
-        
-        resolve(mockProducts);
-      }, 500); // Simulate network delay
+        const currentProduct = allProducts.find(p => p.id === productId);
+        if (currentProduct) {
+          // Get products in the same category, excluding the current one
+          const related = allProducts
+            .filter(p => p.category === currentProduct.category && p.id !== productId)
+            .slice(0, 4); // Limit to 4 related products
+          
+          resolve(related.length > 0 ? related : allProducts.slice(0, 3));
+        } else {
+          // Fallback to some default products
+          resolve(allProducts.slice(0, 3));
+        }
+      }, 300);
     });
   };
 
@@ -263,6 +241,35 @@ const ProductPage: React.FC = () => {
               </Button>
             </div>
             
+            {/* Feature bullets */}
+            {product.features && product.features.length > 0 && (
+              <div className="mb-6 bg-earth-50 p-4 rounded-lg">
+                <h3 className="font-medium mb-2">Key Features</h3>
+                <ul className="space-y-1">
+                  {product.features.map((feature, index) => (
+                    <li key={index} className="flex items-center text-sm">
+                      <div className="mr-2 h-1.5 w-1.5 rounded-full bg-eco-600"></div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {/* Certifications */}
+            {product.certifications && product.certifications.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-medium mb-2">Certifications</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.certifications.map((cert, index) => (
+                    <div key={index} className="text-xs bg-earth-100 text-eco-800 px-3 py-1 rounded-full">
+                      {cert.name}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div className="space-y-4 border-t border-earth-200 pt-6">
               <div className="flex items-start">
                 <Truck className="h-5 w-5 text-eco-600 mr-3 flex-shrink-0 mt-0.5" />
@@ -308,7 +315,7 @@ const ProductPage: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold mb-2">Product Description</h3>
                 <p className="text-muted-foreground">
-                  Our Bamboo Utensil Set is the perfect solution for on-the-go meals, picnics, camping, or daily use at the office. Made from sustainably harvested bamboo, these durable utensils are lightweight, heat-resistant, and won't absorb flavors or stain.
+                  {product.description}
                 </p>
               </div>
               <div>

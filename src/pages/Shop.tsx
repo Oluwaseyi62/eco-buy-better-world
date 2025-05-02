@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
-import { categories } from "@/data/products";
+import { categories, products } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
 import { useQuery } from "@tanstack/react-query";
 import { Product } from "@/types";
@@ -19,91 +19,22 @@ const Shop: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortOption, setSortOption] = useState<string>("featured");
 
-  // Mock fetch function - in a real app, this would call an API
+  // Fetch all products from our data
   const fetchProducts = async (): Promise<Product[]> => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Normally this would be an API call
-        const mockProducts: Product[] = [
-          {
-            id: "1",
-            name: "Bamboo Utensil Set",
-            description: "Reusable bamboo utensils perfect for on-the-go meals. Includes fork, knife, spoon, and chopsticks in a compact carrying case.",
-            price: 19.99,
-            image: "https://images.unsplash.com/photo-1584346133934-7a7398d0c777?q=80&w=2000&auto=format&fit=crop",
-            category: "kitchen",
-            sustainabilityScore: 4.5,
-            inStock: true,
-            isOnSale: false
-          },
-          {
-            id: "2",
-            name: "Organic Cotton Tote Bag",
-            description: "Durable, washable tote made from 100% organic cotton. Perfect for grocery shopping or daily use.",
-            price: 14.99,
-            image: "https://images.unsplash.com/photo-1619627261985-1ad98c30f15f?q=80&w=2000&auto=format&fit=crop",
-            category: "accessories",
-            sustainabilityScore: 5.0,
-            inStock: true,
-            isOnSale: true
-          },
-          {
-            id: "3",
-            name: "Recycled Glass Water Bottle",
-            description: "Beautiful water bottle made from recycled glass with a silicone protective sleeve.",
-            price: 24.99,
-            image: "https://images.unsplash.com/photo-1638184984605-af1f05249a56?q=80&w=2000&auto=format&fit=crop",
-            category: "home",
-            sustainabilityScore: 4.8,
-            inStock: true,
-            isOnSale: false
-          },
-          {
-            id: "4",
-            name: "Biodegradable Phone Case",
-            description: "Protect your phone with this fully compostable phone case made from plant-based materials.",
-            price: 29.99,
-            image: "https://images.unsplash.com/photo-1609081219090-a6d81d3085bf?q=80&w=2000&auto=format&fit=crop",
-            category: "tech",
-            sustainabilityScore: 4.2,
-            inStock: true,
-            isOnSale: true
-          },
-          {
-            id: "5",
-            name: "Solar-Powered Charger",
-            description: "Charge your devices using the power of the sun with this portable solar charger.",
-            price: 49.99,
-            image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=2000&auto=format&fit=crop",
-            category: "tech",
-            sustainabilityScore: 4.7,
-            inStock: true,
-            isOnSale: false
-          },
-          {
-            id: "6",
-            name: "Beeswax Food Wraps",
-            description: "Reusable, biodegradable alternative to plastic wrap. Perfect for keeping food fresh.",
-            price: 18.99,
-            image: "https://images.unsplash.com/photo-1606483956061-46a898dce538?q=80&w=2000&auto=format&fit=crop",
-            category: "kitchen",
-            sustainabilityScore: 4.9,
-            inStock: true,
-            isOnSale: true
-          }
-        ];
-        resolve(mockProducts);
-      }, 500); // Simulate network delay
+        resolve(products);
+      }, 300); // Small delay to simulate API call
     });
   };
 
-  const { data: products, isLoading } = useQuery({
+  const { data: allProducts, isLoading } = useQuery({
     queryKey: ['products'],
     queryFn: fetchProducts,
   });
 
   // Filter and sort products
-  const filteredProducts = products?.filter(product => {
+  const filteredProducts = allProducts?.filter(product => {
     // Filter by category
     if (selectedCategory !== "all" && product.category !== selectedCategory) {
       return false;
@@ -128,6 +59,18 @@ const Shop: React.FC = () => {
         return 0;
     }
   });
+
+  // Calculate the maximum price for the slider
+  const maxPrice = allProducts ? Math.ceil(Math.max(...allProducts.map(p => p.price))) : 100;
+
+  // Set the initial price range to cover all products
+  React.useEffect(() => {
+    if (allProducts && allProducts.length > 0) {
+      const min = Math.floor(Math.min(...allProducts.map(p => p.price)));
+      const max = Math.ceil(Math.max(...allProducts.map(p => p.price)));
+      setPriceRange([min, max]);
+    }
+  }, [allProducts]);
 
   return (
     <Layout>
@@ -168,10 +111,9 @@ const Shop: React.FC = () => {
               <h3 className="font-medium mb-2">Price Range</h3>
               <div className="px-2">
                 <Slider
-                  defaultValue={[0, 100]}
-                  max={100}
-                  step={1}
                   value={priceRange}
+                  max={maxPrice}
+                  step={1}
                   onValueChange={setPriceRange}
                   className="my-6"
                 />
@@ -208,11 +150,15 @@ const Shop: React.FC = () => {
                   <div key={i} className="rounded-lg bg-gray-100 animate-pulse h-[350px]"></div>
                 ))}
               </div>
-            ) : (
+            ) : filteredProducts && filteredProducts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts?.map((product) => (
+                {filteredProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-xl text-muted-foreground">No products found matching your criteria</p>
               </div>
             )}
           </div>

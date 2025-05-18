@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EyeIcon, EyeOffIcon, Upload } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -469,7 +468,7 @@ const LoginPage: React.FC = () => {
           </Tabs>
         </div>
       </main>
-      <Footer />
+     
     </div>
   );
 };

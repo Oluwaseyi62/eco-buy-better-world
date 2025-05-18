@@ -248,9 +248,9 @@ const LoginPage: React.FC = () => {
                         Remember me
                       </label>
                     </div>
-                    <a href="#" className="text-sm text-eco-600 hover:text-eco-700">
+                    <Link to="/auth/forgot-password" className="text-sm text-eco-600 hover:text-eco-700">
                       Forgot password?
-                    </a>
+                    </Link>
                   </div>
                   
                   <Button 
@@ -469,7 +469,7 @@ const LoginPage: React.FC = () => {
           </Tabs>
         </div>
       </main>
-      
+      <Footer />
     </div>
   );
 };

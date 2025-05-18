@@ -81,6 +81,10 @@ interface AuthContextType {
   removeFromWishlist: (itemId: string) => void;
   clearWishlist: () => void;
   createOrder: () => string | null;
+  verifyAccount: (email: string, code: string) => Promise<void>;
+  resendVerificationCode: (email: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -460,6 +464,162 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const verifyAccount = async (email: string, code: string) => {
+    try {
+      setIsLoading(true);
+      
+      // Mock verification for demo purposes
+      // In a real app, this would call an API endpoint
+      
+      if (code === "123456") { // Mock successful verification
+        const storedUsers = localStorage.getItem("users");
+        if (storedUsers) {
+          const users = JSON.parse(storedUsers);
+          const userIndex = users.findIndex((u: any) => u.email === email);
+          
+          if (userIndex >= 0) {
+            users[userIndex].emailVerified = true;
+            localStorage.setItem("users", JSON.stringify(users));
+            
+            // If current user email matches, update their verified status
+            if (user && user.email === email) {
+              const updatedUser = { ...user, emailVerified: true };
+              setUser(updatedUser);
+              localStorage.setItem("user", JSON.stringify(updatedUser));
+            }
+            
+            toast({
+              title: "Email verified",
+              description: "Your account has been successfully verified",
+            });
+            
+            navigate("/");
+          } else {
+            throw new Error("User not found");
+          }
+        }
+      } else {
+        throw new Error("Invalid verification code");
+      }
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Verification error:", error);
+      toast({
+        title: "Verification failed",
+        description: error instanceof Error ? error.message : "Please try again with a valid code",
+        variant: "destructive",
+      });
+      return Promise.reject(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const resendVerificationCode = async (email: string) => {
+    try {
+      // Mock resend verification code
+      // In a real app, this would call an API endpoint to trigger another email
+      
+      toast({
+        title: "Verification code sent",
+        description: `A new verification code has been sent to ${email}`,
+      });
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Resend verification code error:", error);
+      toast({
+        title: "Failed to resend code",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+      return Promise.reject(error);
+    }
+  };
+  
+  const forgotPassword = async (email: string) => {
+    try {
+      setIsLoading(true);
+      
+      // Check if the email exists in the system
+      const storedUsers = localStorage.getItem("users");
+      if (storedUsers) {
+        const users = JSON.parse(storedUsers);
+        const userExists = users.some((u: any) => u.email === email);
+        
+        if (!userExists) {
+          throw new Error("No account found with this email address");
+        }
+      }
+      
+      // In a real app, this would call an API endpoint to send a reset email
+      
+      toast({
+        title: "Reset link sent",
+        description: `A password reset link has been sent to ${email}`,
+      });
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      toast({
+        title: "Failed to send reset link",
+        description: error instanceof Error ? error.message : "Please try again later",
+        variant: "destructive",
+      });
+      return Promise.reject(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const resetPassword = async (email: string, code: string, newPassword: string) => {
+    try {
+      setIsLoading(true);
+      
+      // Mock password reset validation
+      // In a real app, this would validate the code with an API
+      
+      if (code !== "123456") { // Mock validation code
+        throw new Error("Invalid reset code");
+      }
+      
+      // Update password in mock storage
+      const storedUsers = localStorage.getItem("users");
+      if (storedUsers) {
+        const users = JSON.parse(storedUsers);
+        const userIndex = users.findIndex((u: any) => u.email === email);
+        
+        if (userIndex >= 0) {
+          users[userIndex].password = newPassword;
+          localStorage.setItem("users", JSON.stringify(users));
+          
+          toast({
+            title: "Password reset successful",
+            description: "You can now log in with your new password",
+          });
+          
+          navigate("/auth/login");
+        } else {
+          throw new Error("User not found");
+        }
+      }
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Reset password error:", error);
+      toast({
+        title: "Failed to reset password",
+        description: error instanceof Error ? error.message : "Please try again later",
+        variant: "destructive",
+      });
+      return Promise.reject(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -478,6 +638,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         removeFromWishlist,
         clearWishlist,
         createOrder,
+        verifyAccount,
+        resendVerificationCode,
+        forgotPassword,
+        resetPassword,
       }}
     >
       {children}

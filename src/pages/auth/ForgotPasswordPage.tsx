@@ -145,7 +145,6 @@ const ForgotPasswordPage: React.FC = () => {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

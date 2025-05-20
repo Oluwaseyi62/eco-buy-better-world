@@ -47,7 +47,7 @@ const About: React.FC = () => {
         <div className="bg-earth-50 rounded-xl p-8 mb-20">
           <h2 className="text-3xl font-bold text-center mb-12">Our Values</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white p-6 rounded-lg shadow-sm duration-300 hover:scale-110">
               <LeafyGreen className="h-12 w-12 text-eco-600 mb-4" />
               <h3 className="text-xl font-semibold mb-2">Environmental Impact</h3>
               <p className="text-muted-foreground">
@@ -55,7 +55,7 @@ const About: React.FC = () => {
                 from raw materials to manufacturing process and end-of-life options.
               </p>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white p-6 rounded-lg shadow-sm duration-300 hover:scale-110">
               <ShieldCheck className="h-12 w-12 text-eco-600 mb-4" />
               <h3 className="text-xl font-semibold mb-2">Transparency</h3>
               <p className="text-muted-foreground">
@@ -63,7 +63,7 @@ const About: React.FC = () => {
                 sustainability credentials, allowing you to make informed choices.
               </p>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white p-6 rounded-lg shadow-sm duration-300 hover:scale-110">
               <Users className="h-12 w-12 text-eco-600 mb-4" />
               <h3 className="text-xl font-semibold mb-2">Community</h3>
               <p className="text-muted-foreground">
@@ -71,7 +71,7 @@ const About: React.FC = () => {
                 of environmentally conscious consumers and brands.
               </p>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white p-6 rounded-lg shadow-sm duration-300 hover:scale-110">
               <RecycleIcon className="h-12 w-12 text-eco-600 mb-4" />
               <h3 className="text-xl font-semibold mb-2">Circular Economy</h3>
               <p className="text-muted-foreground">
@@ -79,7 +79,7 @@ const About: React.FC = () => {
                 recyclability, reducing waste and resource consumption.
               </p>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white p-6 rounded-lg shadow-sm duration-300 hover:scale-110">
               <Heart className="h-12 w-12 text-eco-600 mb-4" />
               <h3 className="text-xl font-semibold mb-2">Social Responsibility</h3>
               <p className="text-muted-foreground">
@@ -87,7 +87,7 @@ const About: React.FC = () => {
                 practices and community benefits.
               </p>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white p-6 rounded-lg shadow-sm duration-300 hover:scale-110">
               <ArrowUpRight className="h-12 w-12 text-eco-600 mb-4" />
               <h3 className="text-xl font-semibold mb-2">Continuous Improvement</h3>
               <p className="text-muted-foreground">
@@ -107,7 +107,7 @@ const About: React.FC = () => {
           </p>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4">
+              <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4 duration-300 hover:scale-110">
                 <img 
                   src="./Dan.jpg" 
                   alt="Team member" 
@@ -118,7 +118,7 @@ const About: React.FC = () => {
               <p className="text-muted-foreground">Founder & Software Engineer</p>
             </div>
             <div className="text-center">
-              <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4">
+              <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4 duration-300 hover:scale-110">
                 <img 
                   src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2000&auto=format&fit=crop" 
                   alt="Team member" 
@@ -129,7 +129,7 @@ const About: React.FC = () => {
               <p className="text-muted-foreground">Co Founder & Backend Engineer</p>
             </div>
             <div className="text-center">
-              <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4">
+              <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4 duration-300 hover:scale-110">
                 <img 
                   src="./goodie.jpg" 
                   alt="Team member" 
@@ -140,7 +140,7 @@ const About: React.FC = () => {
               <p className="text-muted-foreground">Co Founder & Designer</p>
             </div>
             <div className="text-center">
-              <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4">
+              <div className="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4 duration-300 hover:scale-110">
                 <img 
                   src="./victor.jpg" 
                   alt="Team member" 

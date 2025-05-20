@@ -25,7 +25,7 @@ const Hero: React.FC = () => {
             </div>
             <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl transition-all duration-700 delay-300 ease-out transform 
             ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}">
-              Your Marketplace for 
+              A Marketplace for 
               <span className="text-eco-600 relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-1 after:bottom-0 after:left-0 after:bg-eco-600 after:origin-bottom-right after:transition-transform after:duration-500 hover:after:scale-x-100 hover:after:origin-bottom-left"> Verified Eco-Friendly</span> Products
             </h1>
             <p className="mb-8 text-lg text-muted-foreground md:text-xl transition-all duration-700 delay-500 ease-out transform 

@@ -81,7 +81,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         >
           <Heart className="h-5 w-5 text-gray-600" />
         </button>
-      )}
+      )}   
       {isInWishlist && (
         <button 
           className="absolute top-2 right-2 z-10 bg-white rounded-full p-1.5 shadow-md"
@@ -92,7 +92,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       )}
       
       <Link to={`/product/${product.id}`}>
-        <div className="aspect-square overflow-hidden">
+        <div className="aspect-square overflow-hidden"> 
           <img
             src={product.image}
             alt={product.name}

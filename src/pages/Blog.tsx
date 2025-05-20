@@ -103,7 +103,7 @@ const Blog: React.FC = () => {
               <h2 className="text-3xl font-bold mb-3">
                 {featuredPost.title}
               </h2>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground mb-4">  
                 {featuredPost.excerpt}
               </p>
               <div className="flex items-center text-sm text-muted-foreground mb-6">

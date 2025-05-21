@@ -15,6 +15,7 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTab }) =>
     { id: "profile", label: "My Profile", icon: User, path: "/account/profile" },
     { id: "orders", label: "My Orders", icon: Package, path: "/account/orders" },
     { id: "wishlist", label: "My Wishlist", icon: Heart, path: "/account/wishlist" },
+    { id: "settings", label: "Account Settings", icon: Settings, path: "/account/settings" },
   ];
 
   return (
@@ -42,13 +43,6 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTab }) =>
               
               <div className="border-t border-earth-200 my-4"></div>
               
-              <Link
-                to="/account/settings"
-                className="flex items-center px-3 py-2 rounded-md text-muted-foreground hover:bg-earth-100 hover:text-eco-600 transition-colors"
-              >
-                <Settings className="h-5 w-5 mr-3" />
-                Account Settings
-              </Link>
               <Link
                 to="/auth/login"
                 className="flex items-center px-3 py-2 rounded-md text-muted-foreground hover:bg-earth-100 hover:text-eco-600 transition-colors"

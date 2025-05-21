@@ -5,7 +5,7 @@ import { Package, User, Heart, Settings, LogOut } from "lucide-react";
 
 interface AccountLayoutProps {
   children: React.ReactNode;
-  activeTab: "profile" | "orders" | "wishlist";
+  activeTab: "profile" | "orders" | "wishlist" | "settings";
 }
 
 const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTab }) => {

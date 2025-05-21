@@ -19,6 +19,7 @@ import CategoryPage from "./pages/CategoryPage";
 import ProfilePage from "./pages/account/ProfilePage";
 import OrdersPage from "./pages/account/OrdersPage";
 import WishlistPage from "./pages/account/WishlistPage";
+import SettingsPage from "./pages/account/SettingsPage";
 import LoginPage from "./pages/auth/LoginPage";
 import VerifyPage from "./pages/auth/VerifyPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
@@ -75,6 +76,11 @@ const App = () => (
             <Route path="/account/wishlist" element={
               <ProtectedRoute>
                 <WishlistPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/account/settings" element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             } />
             <Route path="/auth/login" element={<LoginPage />} />

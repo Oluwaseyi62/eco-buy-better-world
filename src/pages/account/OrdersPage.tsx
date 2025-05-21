@@ -7,11 +7,15 @@ import { Package, ChevronRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
+import OrderDetailModal from "@/components/OrderDetailModal";
+import { OrderType } from "@/types";
 
 const OrdersPage: React.FC = () => {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   
   const orders = user?.orders || [];
   
@@ -50,6 +54,11 @@ const OrdersPage: React.FC = () => {
       day: 'numeric' 
     });
   };
+  
+  const handleViewDetails = (order: OrderType) => {
+    setSelectedOrder(order);
+    setIsDetailOpen(true);
+  };
 
   return (
     <Layout>
@@ -85,9 +94,7 @@ const OrdersPage: React.FC = () => {
           {filteredOrders.length === 0 ? (
             <div className="text-center py-12 border border-earth-200 rounded-lg">
               <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No orders yet.
-                
-              </h2>
+              <h2 className="text-xl font-semibold mb-2">No orders yet.</h2>
               <p className="text-muted-foreground mb-6">
                 When you place orders, they will appear here.
               </p>
@@ -117,7 +124,12 @@ const OrdersPage: React.FC = () => {
                         <div className="text-sm text-muted-foreground">Total</div>
                         <div className="font-semibold">${order.total.toFixed(2)}</div>
                       </div>
-                      <Button variant="outline" size="sm" className="flex-shrink-0">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-shrink-0"
+                        onClick={() => handleViewDetails(order)}
+                      >
                         View Details
                         <ChevronRight className="ml-1 h-4 w-4" />
                       </Button>
@@ -153,6 +165,12 @@ const OrdersPage: React.FC = () => {
               ))}
             </div>
           )}
+          
+          <OrderDetailModal 
+            order={selectedOrder}
+            open={isDetailOpen}
+            onOpenChange={setIsDetailOpen}
+          />
         </div>
       </AccountLayout>
     </Layout>

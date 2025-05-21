@@ -14,6 +14,7 @@ import Sustainability from "./pages/Sustainability";
 import Blog from "./pages/Blog";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import PaymentPage from "./pages/PaymentPage";
 import CategoryPage from "./pages/CategoryPage";
 import ProfilePage from "./pages/account/ProfilePage";
 import OrdersPage from "./pages/account/OrdersPage";
@@ -53,6 +54,11 @@ const App = () => (
             <Route path="/checkout" element={
               <ProtectedRoute>
                 <Checkout />
+              </ProtectedRoute>
+            } />
+            <Route path="/payment" element={
+              <ProtectedRoute>
+                <PaymentPage />
               </ProtectedRoute>
             } />
             <Route path="/category/:categoryId" element={<CategoryPage />} />

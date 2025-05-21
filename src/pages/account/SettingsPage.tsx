@@ -13,7 +13,7 @@ const SettingsPage: React.FC = () => {
   const handleSaveChanges = () => {
     toast({
       title: "Settings saved",
-      description: "Your preferences have been updated",
+      description: "Your preferences have been updated.",
     });
   };
   

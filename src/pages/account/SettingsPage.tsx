@@ -7,16 +7,17 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { Settings, Lock, Bell, Palette, Globe } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const SettingsPage: React.FC = () => {
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, toggleDarkMode } = useTheme();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   const [language, setLanguage] = useState("english");
   
   const handleDarkModeChange = (checked: boolean) => {
-    setDarkMode(checked);
+    toggleDarkMode();
     toast({
       title: checked ? "Dark mode enabled" : "Dark mode disabled",
       description: "Your preference has been saved",
@@ -44,7 +45,7 @@ const SettingsPage: React.FC = () => {
           
           <div className="grid md:grid-cols-2 gap-8">
             {/* Display Settings */}
-            <div className="p-6 border border-earth-200 rounded-lg">
+            <div className="p-6 border border-earth-200 rounded-lg dark:border-gray-700">
               <div className="flex items-center gap-3 mb-4">
                 <Palette className="h-5 w-5 text-eco-600" />
                 <h2 className="text-lg font-semibold">Display Settings</h2>
@@ -74,7 +75,7 @@ const SettingsPage: React.FC = () => {
                   </div>
                   <select 
                     id="language"
-                    className="rounded-md border border-earth-200 px-3 py-2 text-sm"
+                    className="rounded-md border border-earth-200 dark:border-gray-700 px-3 py-2 text-sm dark:bg-gray-800"
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
                   >
@@ -88,7 +89,7 @@ const SettingsPage: React.FC = () => {
             </div>
             
             {/* Security Settings */}
-            <div className="p-6 border border-earth-200 rounded-lg">
+            <div className="p-6 border border-earth-200 rounded-lg dark:border-gray-700">
               <div className="flex items-center gap-3 mb-4">
                 <Lock className="h-5 w-5 text-eco-600" />
                 <h2 className="text-lg font-semibold">Security Settings</h2>
@@ -113,15 +114,15 @@ const SettingsPage: React.FC = () => {
                 {!twoFactorAuth && (
                   <Button 
                     variant="outline" 
-                    className="w-full"
+                    className="w-full dark:border-gray-700 dark:hover:bg-gray-700"
                     onClick={handleEnableTwoFactor}
                   >
                     Enable Two-factor Authentication
                   </Button>
                 )}
                 
-                <div className="pt-2 border-t border-earth-200">
-                  <Button variant="outline" className="w-full">
+                <div className="pt-2 border-t border-earth-200 dark:border-gray-700">
+                  <Button variant="outline" className="w-full dark:border-gray-700 dark:hover:bg-gray-700">
                     Change Password
                   </Button>
                 </div>
@@ -129,7 +130,7 @@ const SettingsPage: React.FC = () => {
             </div>
             
             {/* Notification Settings */}
-            <div className="p-6 border border-earth-200 rounded-lg">
+            <div className="p-6 border border-earth-200 rounded-lg dark:border-gray-700">
               <div className="flex items-center gap-3 mb-4">
                 <Bell className="h-5 w-5 text-eco-600" />
                 <h2 className="text-lg font-semibold">Notification Settings</h2>
@@ -167,7 +168,7 @@ const SettingsPage: React.FC = () => {
             </div>
             
             {/* Regional Settings */}
-            <div className="p-6 border border-earth-200 rounded-lg">
+            <div className="p-6 border border-earth-200 rounded-lg dark:border-gray-700">
               <div className="flex items-center gap-3 mb-4">
                 <Globe className="h-5 w-5 text-eco-600" />
                 <h2 className="text-lg font-semibold">Regional Settings</h2>
@@ -183,7 +184,7 @@ const SettingsPage: React.FC = () => {
                   </div>
                   <select 
                     id="currency"
-                    className="rounded-md border border-earth-200 px-3 py-2 text-sm"
+                    className="rounded-md border border-earth-200 dark:border-gray-700 px-3 py-2 text-sm dark:bg-gray-800"
                     defaultValue="usd"
                   >
                     <option value="usd">USD ($)</option>
@@ -202,7 +203,7 @@ const SettingsPage: React.FC = () => {
                   </div>
                   <select 
                     id="timezone"
-                    className="rounded-md border border-earth-200 px-3 py-2 text-sm"
+                    className="rounded-md border border-earth-200 dark:border-gray-700 px-3 py-2 text-sm dark:bg-gray-800"
                     defaultValue="utc"
                   >
                     <option value="utc">UTC (GMT+0)</option>
@@ -215,8 +216,8 @@ const SettingsPage: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex justify-end space-x-3 pt-6 border-t border-earth-200">
-            <Button variant="outline">Cancel</Button>
+          <div className="flex justify-end space-x-3 pt-6 border-t border-earth-200 dark:border-gray-700">
+            <Button variant="outline" className="dark:border-gray-700 dark:hover:bg-gray-700">Cancel</Button>
             <Button 
               className="bg-eco-600 hover:bg-eco-700"
               onClick={() => {

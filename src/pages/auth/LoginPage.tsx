@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EyeIcon, EyeOffIcon, Upload } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -230,7 +229,7 @@ const LoginPage: React.FC = () => {
                         </div>
                         <FormMessage />
                         <div className="text-xs text-muted-foreground mt-1">
-                          For demo: Use the password you created during registration
+                           Use the password you created during registration
                         </div>
                       </FormItem>
                     )}
@@ -248,9 +247,9 @@ const LoginPage: React.FC = () => {
                         Remember me
                       </label>
                     </div>
-                    <a href="#" className="text-sm text-eco-600 hover:text-eco-700">
+                    <Link to="/auth/forgot-password" className="text-sm text-eco-600 hover:text-eco-700">
                       Forgot password?
-                    </a>
+                    </Link>
                   </div>
                   
                   <Button 
@@ -469,7 +468,7 @@ const LoginPage: React.FC = () => {
           </Tabs>
         </div>
       </main>
-      
+     
     </div>
   );
 };

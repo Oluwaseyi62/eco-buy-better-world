@@ -13,7 +13,7 @@ const Blog: React.FC = () => {
     excerpt: "Small changes in your daily habits can make a big difference for the environment. Here are ten easy swaps to reduce your ecological footprint.",
     image: "https://images.unsplash.com/photo-1581783898377-1c85bf937427?q=80&w=2000&auto=format&fit=crop",
     date: "April 2, 2025",
-    author: "Emma Chen",
+    author: "Emma Chen", 
     category: "Sustainable Living"
   };
   
@@ -103,7 +103,7 @@ const Blog: React.FC = () => {
               <h2 className="text-3xl font-bold mb-3">
                 {featuredPost.title}
               </h2>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground mb-4">  
                 {featuredPost.excerpt}
               </p>
               <div className="flex items-center text-sm text-muted-foreground mb-6">

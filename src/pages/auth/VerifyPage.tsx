@@ -79,7 +79,7 @@ const VerifyPage: React.FC = () => {
     
     return () => clearTimeout(timer);
   }, [cooldown]);
-  
+
   const onSubmit = async (data: VerificationFormValues) => {
     if (!email) {
       toast({

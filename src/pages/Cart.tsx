@@ -1,4 +1,3 @@
-
 import React from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
 
 const Cart: React.FC = () => {
-  const { user, updateCartItemQuantity, removeFromCart, clearCart, createOrder } = useAuth();
+  const { user, updateCartItemQuantity, removeFromCart, clearCart } = useAuth();
   const navigate = useNavigate();
   
   const cartItems = user?.cart || [];
@@ -32,16 +31,15 @@ const Cart: React.FC = () => {
   const total = subtotal + shipping + tax;
 
   const handleCheckout = () => {
-    const orderId = createOrder();
-    if (orderId) {
-      navigate("/account/orders");
-    } else {
+    if (cartItems.length === 0) {
       toast({
-        title: "Checkout failed",
-        description: "Unable to process your order. Please try again.",
+        title: "Empty cart",
+        description: "Please add items to your cart before proceeding to checkout.",
         variant: "destructive",
       });
+      return;
     }
+    navigate("/checkout");
   };
 
   return (
@@ -160,7 +158,7 @@ const Cart: React.FC = () => {
                   <span>${total.toFixed(2)}</span>
                 </div>
                 <Button className="w-full bg-eco-600 hover:bg-eco-700" onClick={handleCheckout}>
-                  Complete Order
+                  Proceed to Checkout
                 </Button>
                 
                 <div className="mt-4 text-sm text-muted-foreground">

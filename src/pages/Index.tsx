@@ -56,7 +56,7 @@ const Index: React.FC = () => {
 
   const features = [
     {
-      icon: <Leaf className="h-10 w-10 text-eco-600" />,
+      icon: <Leaf className="h-10 w-10 text-eco-600 " />,
       title: "Verified Eco-Friendly",
       description:
         "Every product is thoroughly vetted for sustainability and ethical practices.",
@@ -138,7 +138,7 @@ const Index: React.FC = () => {
                 <div 
                   key={index} 
                   ref={(el) => (featureRefs.current[index] = el)}
-                  className="rounded-xl bg-white p-6 shadow-sm transition-all duration-500 hover:shadow-md opacity-0 translate-y-10 transform"
+                  className="rounded-xl bg-white p-6 shadow-sm transition-all duration-500 hover:shadow-md opacity-0 translate-y-10 transform hover:scale-110"
                 >
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-eco-100 transition-all duration-300 hover:scale-110">
                     {feature.icon}

@@ -6,30 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CreditCard, Truck, ShieldCheck } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Checkout: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Mock cart data for order summary
-  const orderItems = [
-    {
-      id: "1",
-      name: "Bamboo Utensil Set",
-      price: 19.99,
-      image: "https://images.unsplash.com/photo-1584346133934-7a7398d0c777?q=80&w=1000&auto=format&fit=crop",
-      quantity: 2,
-    },
-    {
-      id: "2",
-      name: "Organic Cotton Tote Bag",
-      price: 14.99,
-      image: "https://images.unsplash.com/photo-1619627261985-1ad98c30f15f?q=80&w=1000&auto=format&fit=crop",
-      quantity: 1,
-    },
-  ];
+  const cartItems = user?.cart || [];
   
-  const subtotal = orderItems.reduce(
+  const subtotal = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
@@ -37,6 +25,10 @@ const Checkout: React.FC = () => {
   const shipping = 4.99;
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + shipping + tax;
+
+  const handleProceedToPayment = () => {
+    navigate('/payment');
+  };
 
   return (
     <Layout>
@@ -149,67 +141,6 @@ const Checkout: React.FC = () => {
                 </p>
               </div>
             </div>
-            
-            {/* Payment Information */}
-            <div className="bg-white rounded-lg border border-earth-200 p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-eco-600 text-white rounded-full flex items-center justify-center font-semibold mr-3">
-                  3
-                </div>
-                <h2 className="text-xl font-semibold">Payment Information</h2>
-              </div>
-              
-              <div className="mb-4">
-                <RadioGroup
-                  value={paymentMethod}
-                  onValueChange={setPaymentMethod}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center border border-earth-200 rounded-lg p-4">
-                    <RadioGroupItem value="card" id="payment-card" className="mr-3" />
-                    <Label htmlFor="payment-card" className="font-medium">
-                      Credit / Debit Card
-                    </Label>
-                  </div>
-                  <div className="flex items-center border border-earth-200 rounded-lg p-4">
-                    <RadioGroupItem value="paypal" id="payment-paypal" className="mr-3" />
-                    <Label htmlFor="payment-paypal" className="font-medium">
-                      PayPal
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              
-              {paymentMethod === "card" && (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="cardName">Name on Card</Label>
-                    <Input id="cardName" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="cardNumber">Card Number</Label>
-                    <Input id="cardNumber" className="mt-1" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="expiration">Expiration (MM/YY)</Label>
-                      <Input id="expiration" placeholder="MM/YY" className="mt-1" />
-                    </div>
-                    <div>
-                      <Label htmlFor="cvv">CVV</Label>
-                      <Input id="cvv" className="mt-1" />
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              <div className="mt-4 flex items-start">
-                <ShieldCheck className="h-5 w-5 text-eco-600 mr-3 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-muted-foreground">
-                  Your payment information is encrypted and secure. We never store your full credit card details.
-                </p>
-              </div>
-            </div>
           </div>
           
           <div>
@@ -217,7 +148,7 @@ const Checkout: React.FC = () => {
               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
               
               <div className="space-y-4 mb-4">
-                {orderItems.map((item) => (
+                {cartItems.map((item) => (
                   <div key={item.id} className="flex">
                     <div className="h-16 w-16 flex-shrink-0 rounded overflow-hidden mr-3">
                       <img
@@ -259,8 +190,8 @@ const Checkout: React.FC = () => {
                 <span>${total.toFixed(2)}</span>
               </div>
               
-              <Button className="w-full bg-eco-600 hover:bg-eco-700 mb-4">
-                Place Order
+              <Button className="w-full bg-eco-600 hover:bg-eco-700 mb-4" onClick={handleProceedToPayment}>
+                Proceed to Payment
               </Button>
               
               <div className="text-center">

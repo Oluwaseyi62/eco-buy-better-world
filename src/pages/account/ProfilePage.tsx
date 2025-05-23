@@ -166,7 +166,7 @@ const ProfilePage: React.FC = () => {
           <div>
             <h1 className="text-2xl font-bold mb-2">My Profile</h1>
             <p className="text-muted-foreground">
-              Manage your personal information and preferences.
+              Manage your personal informations and preferences.
             </p>
           </div>
           

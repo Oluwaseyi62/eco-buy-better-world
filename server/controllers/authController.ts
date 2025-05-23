@@ -52,13 +52,16 @@ export const login = async (
   res: Response,
   next: NextFunction
 ) => {
+ 
   const { email, password } = req.body;
+  console.log(email, password)
   if (!email || !password) {
     next("Please provide all fields");
     return;
   }
   try {
     const user = await Users.findOne({ email }).select("+password");
+    console.log('user', user)
     const isMatch = await compareString(password, user?.password as string);
     if (!user || !isMatch) {
       next("Invalid credentials");
@@ -84,7 +87,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const verifyGoogleToken = async (idToken: string) => {
   try {
-    console.log("idtoken", idToken);
+   
     const ticket = await client.verifyIdToken({
       idToken,
       audience: process.env.GOOGLE_CLIENT_ID,

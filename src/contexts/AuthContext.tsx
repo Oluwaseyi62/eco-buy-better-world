@@ -119,13 +119,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-
+      console.log(email, password)
       // For demo purposes, we're using mock authentication
       if (!email || !password) {
         throw new Error("Email and password are required");
       }
 
-      const response = await fetch("https://eco-buy-better-world.onrender.com/api/auth/login", {
+      const response = await fetch("https://eco-buy-better-world.onrender.com/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -136,9 +136,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }),
       });
       if (!response.ok) {
+        console.log('resoone', response)
         const errorData = await response.json();
+        console.log('errirData', errorData)
         throw new Error(
-          errorData.message || "Registration failed. Please try again."
+         "Registration failed. Please try again."
         );
       }
 

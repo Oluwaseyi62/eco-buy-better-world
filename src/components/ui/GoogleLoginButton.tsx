@@ -2,6 +2,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { toast } from "@/components/ui/use-toast";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 interface User {
   id: string;
   email: string;
@@ -15,7 +16,7 @@ interface User {
   wishlist: [];
 }
 
-export default function GoogleLoginButton() {
+export default function GoogleLoginButton({ text = "signin_with" }: { text?: "signin_with" | "signup_with" | "continue_with" | "signin" }) {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,14 +26,18 @@ export default function GoogleLoginButton() {
     const token = credentialResponse.credential; // ✅ This is the Google ID Token
 
     try {
-      const res = await fetch("https://eco-buy-better-world.onrender.com/api/auth/google-login", {
+      const res = await fetch("https://ecobuy-server.onrender.com/api/auth/google-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
       });
 
       const data = await res.json();
-      console.log("Login success", data);
+      
+      if (data.success){
+
+      
+     
       const newUser: User = {
         id: data.user.id,
         email: data.user.email,
@@ -55,15 +60,45 @@ export default function GoogleLoginButton() {
         description: "Welcome to EcoBuy!",
         variant: "default",
       });
+    }else {
+      if (data.nonRegistered) {
+       toast({
+        title: "Signing In Unsuccessful",
+        description: "Please register an account first",
+        variant: "destructive"
+       })
+
+      } else {
+          toast({
+        title: "Signing In Unsuccessful",
+        description: "Please register an account first",
+        variant: "destructive"
+       })
+      }
+    }
+
+
     } catch (error) {
       console.error("Login error:", error);
     }
   };
 
   return (
-    <GoogleLogin
-      onSuccess={handleLoginSuccess}
-      onError={() => console.log("Login Failed")}
-    />
+    
+ 
+      <GoogleLogin
+        onSuccess={handleLoginSuccess}
+        onError={() => {
+          console.log("Login Failed");
+         
+        }}
+        type="standard"
+        theme="outline"
+        size="large"
+        text={text}
+        width="100%"
+        
+      />
+    
   );
 }

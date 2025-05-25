@@ -84,7 +84,7 @@ interface AuthContextType {
   verifyAccount: (email: string, code: string) => Promise<void>;
   resendVerificationCode: (email: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
-  resetPassword: (email: string, code: string, newPassword: string) => Promise<void>;
+  resetPassword: (userId: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -123,13 +123,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      console.log(email, password)
+      
       // For demo purposes, we're using mock authentication
       if (!email || !password) {
         throw new Error("Email and password are required");
       }
 
-      const response = await fetch("https://eco-buy-better-world.onrender.com/auth/login", {
+      const response = await fetch("https://ecobuy-server.onrender.com/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -140,7 +140,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }),
       });
       if (!response.ok) {
-        console.log('resoone', response)
+        
         const errorData = await response.json();
         console.log('errirData', errorData)
         throw new Error(
@@ -198,7 +198,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (email && password && firstName && lastName) {
         // Check if user already exists
         const response = await fetch(
-          "https://eco-buy-better-world.onrender.com/api/auth/register",
+          "https://ecobuy-server.onrender.com/api/auth/register",
           {
             method: "POST",
             headers: {
@@ -575,38 +575,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-  
-  const resetPassword = async (email: string, code: string, newPassword: string) => {
+    //We arent using this function in the resetPasword page
+  const resetPassword = async (userId: string, newPassword: string) => {
     try {
       setIsLoading(true);
       
       // Mock password reset validation
       // In a real app, this would validate the code with an API
       
-      if (code !== "123456") { // Mock validation code
-        throw new Error("Invalid reset code");
+      if (!userId || !newPassword) {
+        throw new Error("User ID and new password are required");
       }
-      
-      // Update password in mock storage
-      const storedUsers = localStorage.getItem("users");
-      if (storedUsers) {
-        const users = JSON.parse(storedUsers);
-        const userIndex = users.findIndex((u: any) => u.email === email);
+      //We arent using this function in the resetPasword page
+  const response =    await fetch("http://localhost:5000/api/user/update-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          password: newPassword,
+        }),
+      });
+      console.log('response', response)
+      if (!response.ok) { 
+        const errorData = await response.json();
+        console.log('errorData', errorData)
+        toast({
+          title: "Failed to reset password",
+          description:"Please try again later",
+          variant: "destructive",
+        })
         
-        if (userIndex >= 0) {
-          users[userIndex].password = newPassword;
-          localStorage.setItem("users", JSON.stringify(users));
           
           toast({
             title: "Password reset successful",
             description: "You can now log in with your new password",
           });
-          
           navigate("/auth/login");
-        } else {
-          throw new Error("User not found");
-        }
+        
+
+
+        // throw new Error(
+        //   errorData.message || "Failed to reset password. Please try again."
+        // );
       }
+      // Update password in mock storage
+      
       
       return Promise.resolve();
     } catch (error) {

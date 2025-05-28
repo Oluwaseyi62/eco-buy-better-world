@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { EyeIcon, EyeOffIcon, Lock } from "lucide-react";
@@ -26,7 +27,7 @@ import {
 } from "@/components/ui/form";
 
 const resetPasswordSchema = z.object({
-  code: z.string().length(6, "Reset code must be 6 digits"),
+ 
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string().min(6, "Please confirm your password")
 }).refine(data => data.password === data.confirmPassword, {
@@ -37,6 +38,7 @@ const resetPasswordSchema = z.object({
 type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
 const ResetPasswordPage: React.FC = () => {
+   const { userId } = useParams<{ userId: string;  }>();
   const navigate = useNavigate();
   const location = useLocation();
   const { resetPassword, isAuthenticated } = useAuth();
@@ -47,27 +49,24 @@ const ResetPasswordPage: React.FC = () => {
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      code: "",
+     
       password: "",
       confirmPassword: "",
     },
   });
   
-  // Extract email from query params
+  // Extract UserId from query params
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const emailParam = params.get("email");
+   
     
-    if (emailParam) {
-      setEmail(emailParam);
-    } else {
+    if (!userId) {
       toast({
         title: "Error",
         description: "No email provided. Please try resetting your password again.",
         variant: "destructive",
       });
       navigate("/auth/forgot-password");
-    }
+    } 
   }, [location, navigate]);
   
   // Redirect if already authenticated
@@ -80,12 +79,14 @@ const ResetPasswordPage: React.FC = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
+console.log("ResetPasswordPage rendered with userId:", userId);
+console.log(isSubmitting, "isSubmitting state");
   const onSubmit = async (data: ResetPasswordFormValues) => {
-    if (!email) {
+    console.log("Form submitted with data:", data);
+    if (!userId) {
       toast({
         title: "Error",
-        description: "No email provided. Please try resetting your password again.",
+        description: "No details provided. Please try resetting your password again.",
         variant: "destructive",
       });
       navigate("/auth/forgot-password");
@@ -95,8 +96,39 @@ const ResetPasswordPage: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      await resetPassword(email, data.code, data.password);
-      // Success toast is handled in the context
+      console.log("Resetting password for userId:", userId, "with data:", data);
+      // Handled the api call directly here not using the context
+      // await resetPassword(userId, data.password);
+      const response =    await fetch("https://ecobuy-server.onrender.com/api/user/update-password", {
+             method: "POST",
+             headers: {
+               "Content-Type": "application/json",
+             },
+             body: JSON.stringify({
+               userId,
+               password: data.password,
+             }),
+           });
+           if (!response.ok) {
+              const errorData = await response.json();
+              console.error("Error resetting password:", errorData);
+              toast({
+                title: "Failed to reset password",
+                description: "Please try again later",
+                variant: "destructive",
+              });
+              return;
+           }
+          if (response.ok) {
+            toast({
+              title: "Password reset successful",
+              description: "You can now log in with your new password",
+            });
+            navigate("/auth/login");
+          }
+       
+      
+    
     } catch (error) {
       console.error("Password reset error:", error);
       // Error toast is handled in the context
@@ -116,34 +148,13 @@ const ResetPasswordPage: React.FC = () => {
             </div>
             <h1 className="text-2xl font-bold">Reset Your Password</h1>
             <p className="text-muted-foreground mt-2">
-              Enter the 6-digit code sent to <span className="font-medium">{email}</span> and create a new password
+             Input your password  and confirm the new password
             </p>
           </div>
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem className="mx-auto max-w-[320px]">
-                    <FormLabel className="text-center block">Reset Code</FormLabel>
-                    <FormControl>
-                      <InputOTP maxLength={6} {...field}>
-                        <InputOTPGroup>
-                          <InputOTPSlot index={0} />
-                          <InputOTPSlot index={1} />
-                          <InputOTPSlot index={2} />
-                          <InputOTPSlot index={3} />
-                          <InputOTPSlot index={4} />
-                          <InputOTPSlot index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+             
               
               <FormField
                 control={form.control}

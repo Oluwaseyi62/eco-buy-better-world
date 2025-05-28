@@ -46,13 +46,36 @@ const ForgotPasswordPage: React.FC = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  const forgotPassworrd = async (email: string) => {
+    try {
+      const response = await fetch("https://ecobuy-server.onrender.com/api/user/request-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email })
+      });
+
+      if (response.ok) {
+         setEmailSent(true);
+      setSentToEmail(email);
+      } else {
+throw new Error("Failed to send password reset email");
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const onSubmit = async (data: ForgotPasswordFormValues) => {
     setIsSubmitting(true);
     
     try {
-      await forgotPassword(data.email);
-      setEmailSent(true);
-      setSentToEmail(data.email);
+      // await forgotPassword(data.email);
+       await forgotPassworrd(data.email);
+     
     } catch (error) {
       console.error("Password reset request error:", error);
       // Error toast is handled in the context

@@ -271,14 +271,14 @@ const LoginPage: React.FC = () => {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4 mt-6">
+                  <div className="">
                     {/* <Button variant="outline"  onClick={handleGoogle} className="w-full" type="button">
                       Google
                     </Button> */}
-                   <GoogleLoginButton />
-                    <Button variant="outline" className="w-full" type="button">
-                      Facebook
-                    </Button>
+                   <GoogleLoginButton
+                   text = {"continue_with"}
+                   />
+                   
                   </div>
                 </form>
               </Form>
@@ -462,6 +462,24 @@ const LoginPage: React.FC = () => {
                   <Button type="submit"  className="w-full bg-eco-600 hover:bg-eco-700" disabled={registerLoading}>
                     {registerLoading ? "Creating Account..." : "Create Account"}
                   </Button>
+                   <div className="relative mt-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-earth-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        OR
+                      </span>
+                    </div>
+                  </div>
+                  <div className="">
+                    {/* <Button variant="outline"  onClick={handleGoogle} className="w-full" type="button">
+                      Google
+                    </Button> */}
+                   <GoogleLoginButton
+                   text = {"continue_with"}
+                   />
+                   </div>
                 </form>
               </Form>
             </TabsContent>

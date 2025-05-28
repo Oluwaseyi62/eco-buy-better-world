@@ -23,18 +23,22 @@ import WishlistPage from "./pages/account/WishlistPage";
 import SettingsPage from "./pages/account/SettingsPage";
 import LoginPage from "./pages/auth/LoginPage";
 import VerifyPage from "./pages/auth/VerifyPage";
+import VerifyReset from "./pages/auth/VerifyReset";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import ProductPage from "./pages/ProductPage";
 import SearchResults from "./pages/SearchResults";
 import ScrollToTop from "./components/ScrollToTop";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   
   <QueryClientProvider client={queryClient}>
-   
+   <GoogleOAuthProvider
+    clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+   >
     <TooltipProvider>
       <ThemeProvider>
         <Toaster />
@@ -86,8 +90,9 @@ const App = () => (
               } />
               <Route path="/auth/login" element={<LoginPage />} />
               <Route path="/auth/verify" element={<VerifyPage />} />
+              <Route path="/auth/verify-reset/:userId/:token" element={<VerifyReset />} />
               <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/auth/reset-password/:userId" element={<ResetPasswordPage />} />
               <Route path="/product/:productId" element={<ProductPage />} />
               <Route path="/search" element={<SearchResults />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
@@ -97,6 +102,7 @@ const App = () => (
         </BrowserRouter>
       </ThemeProvider>
     </TooltipProvider>
+    </GoogleOAuthProvider>
   </QueryClientProvider>
 );
 

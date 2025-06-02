@@ -214,6 +214,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         );
         if (!response.ok) {
           const errorData = await response.json();
+         
           throw new Error(
             errorData.message || "Registration failed. Please try again."
           );
@@ -221,8 +222,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         const data = await response.json();
         // Mock successful registration
-
-        const newUser: User = {
+   
+     const newUser: User = {
           id: data.user.id,
           email: data.user.email,
           name: `${data.user.firstName} ${data.user.lastName}`,
@@ -245,6 +246,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
 
         return Promise.resolve();
+      // Optionally, save token or redirect
+    
+      
       } else {
         return Promise.reject(new Error("Please fill in all fields"));
       }
@@ -575,7 +579,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-    //We arent using this function in the resetPasword page
+    //WE ARENT USING THEIS FUNCTION FOR REGISTER PASSWORD IT IS HANLDELD IN THE RESET PASSWORD PAGE
   const resetPassword = async (userId: string, newPassword: string) => {
     try {
       setIsLoading(true);

@@ -23,18 +23,18 @@ export default function GoogleLoginButton({ text = "signin_with" }: { text?: "si
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { googleLogin } = useAuth();
+  const {  googleSignUp } = useAuth();
   // Check if user came from a protected route
   const from = location.state?.from || "/";
   const handleLoginSuccess = async (credentialResponse: any) => {
     setIsLoading(true);
     const token = credentialResponse.credential; // ✅ This is the Google ID Token
-   ;
+    
     try {
-      await googleLogin(token);
+      await googleSignUp(token);
       navigate(from, { replace: true });
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("SignUp error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -53,7 +53,7 @@ export default function GoogleLoginButton({ text = "signin_with" }: { text?: "si
       <GoogleLogin
         onSuccess={handleLoginSuccess}
         onError={() => {
-          console.log("Login Failed");
+          console.log("Signup Failed");
         }}
         type="standard"
         theme="outline"

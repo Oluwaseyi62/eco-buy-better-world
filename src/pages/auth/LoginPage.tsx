@@ -296,27 +296,13 @@ const LoginPage: React.FC = () => {
                 
                   <div className="flex justify-center mb-4">
                     <div className="relative">
-                      <Avatar className="h-24 w-24">
-                        <AvatarImage src={avatarUrl} />
-                        <AvatarFallback>
+                      
+                    
                           {registerForm.getValues("firstName") && registerForm.getValues("lastName") 
                             ? `${registerForm.getValues("firstName")[0]}${registerForm.getValues("lastName")[0]}` 
-                            : 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <label 
-                        htmlFor="avatar-upload" 
-                        className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-eco-600 text-white flex items-center justify-center cursor-pointer"
-                      >
-                        <Upload className="h-4 w-4" />
-                        <input 
-                          id="avatar-upload" 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
-                          onChange={handleAvatarChange}
-                        />
-                      </label>
+                            : ''}
+                     
+                     
                     </div>
                   </div>
                   

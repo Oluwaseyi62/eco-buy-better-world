@@ -63,6 +63,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  googleLogin: (token: string) => Promise<void>;
+  googleSignUp: (token: string) => Promise<void>;
   register: (
     email: string,
     password: string,
@@ -123,29 +125,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      
+
       // For demo purposes, we're using mock authentication
       if (!email || !password) {
         throw new Error("Email and password are required");
       }
 
-      const response = await fetch("https://ecobuy-server.onrender.com/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+      const response = await fetch(
+        "https://ecobuy-server.onrender.com/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
       if (!response.ok) {
-        
         const errorData = await response.json();
-        console.log('errirData', errorData)
-        throw new Error(
-         "Registration failed. Please try again."
-        );
+        console.log("errirData", errorData);
+        throw new Error("Registration failed. Please try again.");
       }
 
       const data = await response.json();
@@ -161,8 +163,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       };
 
       const userForSession = { ...newUser };
-        localStorage.setItem("user", JSON.stringify(userForSession));
-        setUser(userForSession);
+      localStorage.setItem("user", JSON.stringify(userForSession));
+      setUser(userForSession);
 
       toast({
         title: "Login successful",
@@ -184,6 +186,108 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const googleLogin = async (token: string) => {
+    try {
+      const res = await fetch(
+        "https://ecobuy-server.onrender.com/api/auth/google-login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        }
+      );
+      const data = await res.json();
+      if (!data.success) {
+        toast({
+          title: "Google Login failed",
+          description: data.error || "Google login failed.",
+          variant: "destructive",
+        });
+        return Promise.reject(new Error(data.error || "Google login failed."));
+      }
+      const newUser: User = {
+        id: data.user._id,
+        email: data.user.email,
+        name: `${data.user.firstName} ${data.user.lastName}`,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        cart: [],
+        orders: [],
+        wishlist: [],
+      };
+      const userForSession = { ...newUser };
+      localStorage.setItem("user", JSON.stringify(userForSession));
+      setUser(userForSession);
+
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
+
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login failed",
+        description:
+          error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+      return Promise.reject(error);
+    }
+  };
+
+  const googleSignUp = async (token: string) => {
+    try {
+      const res = await fetch(
+        "https://ecobuy-server.onrender.com/api/auth/google-signup",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        }
+      );
+      const data = await res.json();
+
+      if (!data.success) {
+        toast({
+          title: "Google Signup failed",
+          description: data.error || "Google Signup failed.",
+          variant: "destructive",
+        });
+        return Promise.reject(new Error(data.error || "Google login failed."));
+      }
+      const newUser: User = {
+        id: data.user._id,
+        email: data.user.email,
+        name: `${data.user.firstName} ${data.user.lastName}`,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        cart: [],
+        orders: [],
+        wishlist: [],
+      };
+      const userForSession = { ...newUser };
+      localStorage.setItem("user", JSON.stringify(userForSession));
+      setUser(userForSession);
+
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
+
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast({
+        title: "Signup failed",
+        description:
+          error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+      return Promise.reject(error);
+    }
+  };
   const register = async (
     email: string,
     password: string,
@@ -214,7 +318,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         );
         if (!response.ok) {
           const errorData = await response.json();
-         
+
           throw new Error(
             errorData.message || "Registration failed. Please try again."
           );
@@ -222,8 +326,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         const data = await response.json();
         // Mock successful registration
-   
-     const newUser: User = {
+
+        const newUser: User = {
           id: data.user.id,
           email: data.user.email,
           name: `${data.user.firstName} ${data.user.lastName}`,
@@ -246,9 +350,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
 
         return Promise.resolve();
-      // Optionally, save token or redirect
-    
-      
+        // Optionally, save token or redirect
       } else {
         return Promise.reject(new Error("Please fill in all fields"));
       }
@@ -473,32 +575,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const verifyAccount = async (email: string, code: string) => {
     try {
       setIsLoading(true);
-      
+
       // Mock verification for demo purposes
       // In a real app, this would call an API endpoint
-      
-      if (code === "123456") { // Mock successful verification
+
+      if (code === "123456") {
+        // Mock successful verification
         const storedUsers = localStorage.getItem("users");
         if (storedUsers) {
           const users = JSON.parse(storedUsers);
           const userIndex = users.findIndex((u: any) => u.email === email);
-          
+
           if (userIndex >= 0) {
             users[userIndex].emailVerified = true;
             localStorage.setItem("users", JSON.stringify(users));
-            
+
             // If current user email matches, update their verified status
             if (user && user.email === email) {
               const updatedUser = { ...user, emailVerified: true };
               setUser(updatedUser);
               localStorage.setItem("user", JSON.stringify(updatedUser));
             }
-            
+
             toast({
               title: "Email verified",
               description: "Your account has been successfully verified",
             });
-            
+
             navigate("/");
           } else {
             throw new Error("User not found");
@@ -507,13 +610,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         throw new Error("Invalid verification code");
       }
-      
+
       return Promise.resolve();
     } catch (error) {
       console.error("Verification error:", error);
       toast({
         title: "Verification failed",
-        description: error instanceof Error ? error.message : "Please try again with a valid code",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try again with a valid code",
         variant: "destructive",
       });
       return Promise.reject(error);
@@ -521,17 +627,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-  
+
   const resendVerificationCode = async (email: string) => {
     try {
       // Mock resend verification code
       // In a real app, this would call an API endpoint to trigger another email
-      
+
       toast({
         title: "Verification code sent",
         description: `A new verification code has been sent to ${email}`,
       });
-      
+
       return Promise.resolve();
     } catch (error) {
       console.error("Resend verification code error:", error);
@@ -543,35 +649,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return Promise.reject(error);
     }
   };
-  
+
   const forgotPassword = async (email: string) => {
     try {
       setIsLoading(true);
-      
+
       // Check if the email exists in the system
       const storedUsers = localStorage.getItem("users");
       if (storedUsers) {
         const users = JSON.parse(storedUsers);
         const userExists = users.some((u: any) => u.email === email);
-        
+
         if (!userExists) {
           throw new Error("No account found with this email address");
         }
       }
-      
+
       // In a real app, this would call an API endpoint to send a reset email
-      
+
       toast({
         title: "Reset link sent",
         description: `A password reset link has been sent to ${email}`,
       });
-      
+
       return Promise.resolve();
     } catch (error) {
       console.error("Forgot password error:", error);
       toast({
         title: "Failed to send reset link",
-        description: error instanceof Error ? error.message : "Please try again later",
+        description:
+          error instanceof Error ? error.message : "Please try again later",
         variant: "destructive",
       });
       return Promise.reject(error);
@@ -579,60 +686,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-    //WE ARENT USING THEIS FUNCTION FOR REGISTER PASSWORD IT IS HANLDELD IN THE RESET PASSWORD PAGE
+  //WE ARENT USING THEIS FUNCTION FOR REGISTER PASSWORD IT IS HANLDELD IN THE RESET PASSWORD PAGE
   const resetPassword = async (userId: string, newPassword: string) => {
     try {
       setIsLoading(true);
-      
+
       // Mock password reset validation
       // In a real app, this would validate the code with an API
-      
+
       if (!userId || !newPassword) {
         throw new Error("User ID and new password are required");
       }
       //We arent using this function in the resetPasword page
-  const response =    await fetch("http://localhost:5000/api/user/update-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          password: newPassword,
-        }),
-      });
-      console.log('response', response)
-      if (!response.ok) { 
+      const response = await fetch(
+        "http://localhost:5000/api/user/update-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId,
+            password: newPassword,
+          }),
+        }
+      );
+      console.log("response", response);
+      if (!response.ok) {
         const errorData = await response.json();
-        console.log('errorData', errorData)
+        console.log("errorData", errorData);
         toast({
           title: "Failed to reset password",
-          description:"Please try again later",
+          description: "Please try again later",
           variant: "destructive",
-        })
-        
-          
-          toast({
-            title: "Password reset successful",
-            description: "You can now log in with your new password",
-          });
-          navigate("/auth/login");
-        
+        });
 
+        toast({
+          title: "Password reset successful",
+          description: "You can now log in with your new password",
+        });
+        navigate("/auth/login");
 
         // throw new Error(
         //   errorData.message || "Failed to reset password. Please try again."
         // );
       }
       // Update password in mock storage
-      
-      
+
       return Promise.resolve();
     } catch (error) {
       console.error("Reset password error:", error);
       toast({
         title: "Failed to reset password",
-        description: error instanceof Error ? error.message : "Please try again later",
+        description:
+          error instanceof Error ? error.message : "Please try again later",
         variant: "destructive",
       });
       return Promise.reject(error);
@@ -648,6 +755,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAuthenticated: !!user,
         isLoading,
         login,
+        googleLogin,
+        googleSignUp,
         register,
         logout,
         updateProfile,

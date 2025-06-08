@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GoogleLogin } from "@react-oauth/google";
 import GoogleLoginButton from "@/components/ui/GoogleLoginButton";
+import GoogleSignupButton from "@/components/ui/GoogleSignupButton";
 import { 
   Form,
   FormControl,
@@ -266,7 +267,7 @@ const LoginPage: React.FC = () => {
                     </div>
                     <div className="relative flex justify-center text-sm">
                       <span className="bg-background px-2 text-muted-foreground">
-                        Or continue with
+                        OR
                       </span>
                     </div>
                   </div>
@@ -276,7 +277,7 @@ const LoginPage: React.FC = () => {
                       Google
                     </Button> */}
                    <GoogleLoginButton
-                   text = {"continue_with"}
+                   text = {"signin_with"}
                    />
                    
                   </div>
@@ -462,8 +463,8 @@ const LoginPage: React.FC = () => {
                     {/* <Button variant="outline"  onClick={handleGoogle} className="w-full" type="button">
                       Google
                     </Button> */}
-                   <GoogleLoginButton
-                   text = {"continue_with"}
+                   <GoogleSignupButton
+                   text = {"signup_with"}
                    />
                    </div>
                 </form>
